@@ -1,0 +1,80 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- tests/fixtures/f990.xml - Non-Profit Spending Reports - 2026-10-26 - Made-up Form 990 for parser tests (starts with a BOM, as some IRS files do). -->
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2023v5.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <ReturnTs>2025-05-14T10:00:00-04:00</ReturnTs>
+    <TaxPeriodEndDt>2024-06-30</TaxPeriodEndDt>
+    <ReturnTypeCd>990</ReturnTypeCd>
+    <TaxPeriodBeginDt>2023-07-01</TaxPeriodBeginDt>
+    <Filer>
+      <EIN>990000001</EIN>
+      <BusinessName><BusinessNameLine1Txt>EXAMPLE MUSEUMS OF</BusinessNameLine1Txt><BusinessNameLine2Txt>SPRINGFIELD</BusinessNameLine2Txt></BusinessName>
+      <USAddress><AddressLine1Txt>1 MAIN ST</AddressLine1Txt><CityNm>SPRINGFIELD</CityNm><StateAbbreviationCd>PA</StateAbbreviationCd><ZIPCd>15213</ZIPCd></USAddress>
+    </Filer>
+    <TaxYr>2023</TaxYr>
+  </ReturnHeader>
+  <ReturnData documentCnt="3">
+    <IRS990 documentId="IRS990">
+      <AmendedReturnInd>X</AmendedReturnInd>
+      <GrossReceiptsAmt>250000000</GrossReceiptsAmt>
+      <WebsiteAddressTxt>WWW.EXAMPLE.ORG</WebsiteAddressTxt>
+      <FormationYr>1895</FormationYr>
+      <ActivityOrMissionDesc>TO RUN EXAMPLE MUSEUMS</ActivityOrMissionDesc>
+      <TotalEmployeeCnt>4000</TotalEmployeeCnt>
+      <TotalVolunteersCnt>900</TotalVolunteersCnt>
+      <CYSalariesCompEmpBnftPaidAmt>120000000</CYSalariesCompEmpBnftPaidAmt>
+      <CYTotalRevenueAmt>200000000</CYTotalRevenueAmt>
+      <CYTotalExpensesAmt>190000000</CYTotalExpensesAmt>
+      <TotalAssetsEOYAmt>900000000</TotalAssetsEOYAmt>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>JANE Q EXAMPLE</PersonNm>
+        <TitleTxt>PRESIDENT &amp; CEO</TitleTxt>
+        <AverageHoursPerWeekRt>50.00</AverageHoursPerWeekRt>
+        <AverageHoursPerWeekRltdOrgRt>0.00</AverageHoursPerWeekRltdOrgRt>
+        <OfficerInd>X</OfficerInd>
+        <ReportableCompFromOrgAmt>900000</ReportableCompFromOrgAmt>
+        <ReportableCompFromRltdOrgAmt>50000</ReportableCompFromRltdOrgAmt>
+        <OtherCompensationAmt>60000</OtherCompensationAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>SAM SAMPLE</PersonNm>
+        <TitleTxt>BOARD CHAIR</TitleTxt>
+        <AverageHoursPerWeekRt>2.00</AverageHoursPerWeekRt>
+        <IndividualTrusteeOrDirectorInd>X</IndividualTrusteeOrDirectorInd>
+        <OfficerInd>X</OfficerInd>
+        <ReportableCompFromOrgAmt>0</ReportableCompFromOrgAmt>
+        <ReportableCompFromRltdOrgAmt>0</ReportableCompFromRltdOrgAmt>
+        <OtherCompensationAmt>0</OtherCompensationAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <BusinessName><BusinessNameLine1Txt>FIRST EXAMPLE TRUST CO</BusinessNameLine1Txt></BusinessName>
+        <TitleTxt>TRUSTEE</TitleTxt>
+        <AverageHoursPerWeekRt>1.00</AverageHoursPerWeekRt>
+        <InstitutionalTrusteeInd>X</InstitutionalTrusteeInd>
+        <ReportableCompFromOrgAmt>0</ReportableCompFromOrgAmt>
+        <ReportableCompFromRltdOrgAmt>0</ReportableCompFromRltdOrgAmt>
+        <OtherCompensationAmt>0</OtherCompensationAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>PAT PLACEHOLDER</PersonNm>
+        <TitleTxt>CHIEF CURATOR</TitleTxt>
+        <AverageHoursPerWeekRt>40.00</AverageHoursPerWeekRt>
+        <HighestCompensatedEmployeeInd>X</HighestCompensatedEmployeeInd>
+        <ReportableCompFromOrgAmt>300000</ReportableCompFromOrgAmt>
+        <ReportableCompFromRltdOrgAmt>0</ReportableCompFromRltdOrgAmt>
+        <OtherCompensationAmt>20000</OtherCompensationAmt>
+      </Form990PartVIISectionAGrp>
+      <Form990PartVIISectionAGrp>
+        <PersonNm>OLD FORMER</PersonNm>
+        <TitleTxt>FORMER CFO</TitleTxt>
+        <AverageHoursPerWeekRt>0.00</AverageHoursPerWeekRt>
+        <FormerOfcrDirectorTrusteeInd>X</FormerOfcrDirectorTrusteeInd>
+        <ReportableCompFromOrgAmt>210000</ReportableCompFromOrgAmt>
+      </Form990PartVIISectionAGrp>
+      <TotalProgramServiceExpensesAmt>150000000</TotalProgramServiceExpensesAmt>
+      <CompCurrentOfcrDirectorsGrp><TotalAmt>2000000</TotalAmt></CompCurrentOfcrDirectorsGrp>
+      <CompDisqualPersonsGrp><TotalAmt>0</TotalAmt></CompDisqualPersonsGrp>
+      <OtherSalariesAndWagesGrp><TotalAmt>98000000</TotalAmt></OtherSalariesAndWagesGrp>
+    </IRS990>
+  </ReturnData>
+</Return>

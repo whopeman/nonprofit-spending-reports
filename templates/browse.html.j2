@@ -1,0 +1,20 @@
+{#
+  templates/browse.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : A to Z list of organizations with pages (works without JavaScript).
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+{% extends "base.html.j2" %}
+{% block title %}Organizations: {{ "0-9" if letter == "0" else letter | upper }}{% endblock %}
+{% block content %}
+<h1>Organizations: {{ "0-9 and other" if letter == "0" else letter | upper }}</h1>
+<nav class="letters" aria-label="Letters">
+  {% for l in letters %}<a href="{{ l }}.html"{% if l == letter %} aria-current="page"{% endif %}>{{ "0-9" if l == "0" else l | upper }}</a> {% endfor %}
+</nav>
+<ul class="cols">
+{% for o in orgs %}<li><a href="{{ root }}org/{{ org_slug(o) }}.html">{{ o.name | orgname }}</a> <span class="muted">{{ o.state or "" }} &middot; {{ o.measure | cusd }}</span></li>
+{% endfor %}
+</ul>
+{% endblock %}

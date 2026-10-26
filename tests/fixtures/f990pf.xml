@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tests/fixtures/f990pf.xml - Non-Profit Spending Reports - 2026-10-26 - Made-up Form 990-PF for parser tests. -->
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2023v5.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <TaxPeriodEndDt>2024-12-31</TaxPeriodEndDt>
+    <ReturnTypeCd>990PF</ReturnTypeCd>
+    <Filer>
+      <EIN>990000003</EIN>
+      <BusinessName><BusinessNameLine1Txt>SAMPLE FAMILY FOUNDATION</BusinessNameLine1Txt></BusinessName>
+      <USAddress><CityNm>RICHMOND</CityNm><StateAbbreviationCd>IN</StateAbbreviationCd></USAddress>
+    </Filer>
+    <TaxYr>2024</TaxYr>
+  </ReturnHeader>
+  <ReturnData documentCnt="1">
+    <IRS990PF documentId="IRS990PF">
+      <FMVAssetsEOYAmt>1444641</FMVAssetsEOYAmt>
+      <AnalysisOfRevenueAndExpenses>
+        <TotalRevAndExpnssAmt>118066</TotalRevAndExpnssAmt>
+        <CompOfficersDirTrstRevAndExpnssAmt>20000</CompOfficersDirTrstRevAndExpnssAmt>
+        <OthEmplSalariesWagesRevAndExpnssAmt>5000</OthEmplSalariesWagesRevAndExpnssAmt>
+        <PensionEmplBnftRevAndExpnssAmt>1000</PensionEmplBnftRevAndExpnssAmt>
+        <TotalExpensesRevAndExpnssAmt>70413</TotalExpensesRevAndExpnssAmt>
+      </AnalysisOfRevenueAndExpenses>
+      <Form990PFBalanceSheetsGrp>
+        <TotalAssetsEOYAmt>1214045</TotalAssetsEOYAmt>
+      </Form990PFBalanceSheetsGrp>
+      <OfficerDirTrstKeyEmplInfoGrp>
+        <OfficerDirTrstKeyEmplGrp>
+          <PersonNm>SEE SCHEDULE ATTACHED</PersonNm>
+          <TitleTxt>SEE SCHEDULE ATTACHED</TitleTxt>
+          <AverageHrsPerWkDevotedToPosRt>0.00</AverageHrsPerWkDevotedToPosRt>
+          <CompensationAmt>0</CompensationAmt>
+        </OfficerDirTrstKeyEmplGrp>
+        <OfficerDirTrstKeyEmplGrp>
+          <PersonNm>SAM SAMPLE</PersonNm>
+          <TitleTxt>TRUSTEE</TitleTxt>
+          <AverageHrsPerWkDevotedToPosRt>2.00</AverageHrsPerWkDevotedToPosRt>
+          <CompensationAmt>20000</CompensationAmt>
+        </OfficerDirTrstKeyEmplGrp>
+      </OfficerDirTrstKeyEmplInfoGrp>
+    </IRS990PF>
+  </ReturnData>
+</Return>

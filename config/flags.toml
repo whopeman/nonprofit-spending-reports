@@ -1,0 +1,34 @@
+# =============================================================================
+# config/flags.toml
+# Project : Non-Profit Spending Reports
+# Date    : 2026-10-26
+# Purpose : Feature flags and build settings. Any flag can be overridden with
+#           an environment variable NP_<NAME> (e.g. NP_TOP_N=250).
+# Change log:
+#   2026-10-26  0.1.0  Initial flags.
+# =============================================================================
+
+# Use the NVIDIA GPU (RAPIDS cuDF) for fuzzy person matching. Reserved for
+# Phase 2; Phase 1 matches exact normalized names inside PostgreSQL.
+use_gpu = true
+
+# IRS processing years of the TEOS e-file XML to load. Each organization's
+# most recent return across these years is the one shown.
+filing_years = [2023, 2024, 2025, 2026]
+
+# How "largest" is measured for the top list: "revenue" (total revenue),
+# "expenses" (total expenses) or "assets" (total assets, end of year).
+rank_by = "revenue"
+
+# Number of organizations on the home page top list.
+top_n = 100
+
+# Organizations get a page only when their ranking measure reaches this many
+# US dollars. Keeps the page count within shared-hosting file limits.
+org_page_min_usd = 10000000
+
+# Phase 2: charitable (program) spending versus internal costs.
+phase2_spending = false
+
+# Phase 3: public-source review of possible violations of exempt status.
+phase3_violations = false

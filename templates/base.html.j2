@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{#
+  templates/base.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : Shared page frame: head with CSP, header navigation, footer with
+            sources and caveats.
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="Content-Security-Policy" content="{{ csp }}">
+    <meta name="description" content="{% block description %}Salaries, boards and spending of the largest US non-profits, from public IRS Form 990 filings.{% endblock %}">
+    <title>{% block title %}Non-Profit Spending Reports{% endblock %} | Hopeman Horde</title>
+    <link rel="stylesheet" href="{{ root }}css/site.css">
+  </head>
+  <body>
+    <header class="site">
+      <a class="brand" href="{{ root }}index.html">Non-Profit Spending Reports</a>
+      <nav aria-label="Site">
+        <a href="{{ root }}index.html">Top {{ top_n }}</a>
+        <a href="{{ root }}browse/a.html">A to Z</a>
+        <a href="{{ root }}about.html">About the data</a>
+        <a href="{{ root }}../">HopemanHorde.com</a>
+      </nav>
+    </header>
+    <main id="main">
+{% block content %}{% endblock %}
+    </main>
+    <footer class="site">
+      <p>
+        Source: IRS Form 990, 990-EZ and 990-PF e-file returns, from the
+        <a href="https://www.irs.gov/charities-non-profits/form-990-series-downloads">IRS Tax Exempt Organization Search bulk downloads</a>,
+        and the <a href="https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf">EO Business Master File</a>.
+        Figures are as filed; this site does not audit them.
+      </p>
+      <p>Built {{ generated }} &middot; version {{ version }} &middot;
+        <a href="{{ repo_url }}">source code</a></p>
+    </footer>
+  </body>
+</html>

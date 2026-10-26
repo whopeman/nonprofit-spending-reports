@@ -1,0 +1,24 @@
+# .gitignore
+# Project : Non-Profit Spending Reports
+# Date    : 2026-10-26
+# Purpose : Keep local deploy config, keys, data and build output out of git.
+# Change log:
+#   2026-10-26  0.1.0  Created from the Campaign Donations project.
+deploy.local.json
+.ssh/
+*.key
+*.pem
+id_*
+*token*
+.env*
+node_modules/
+
+# Build output, data and local environments
+site/
+work/
+*.zip
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tests/fixtures/f990ez.xml - Non-Profit Spending Reports - 2026-10-26 - Made-up Form 990-EZ for parser tests. -->
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2023v5.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <TaxPeriodEndDt>2024-12-31</TaxPeriodEndDt>
+    <ReturnTypeCd>990EZ</ReturnTypeCd>
+    <Filer>
+      <EIN>990000002</EIN>
+      <BusinessName><BusinessNameLine1Txt>DEMO SAILING CLUB INC</BusinessNameLine1Txt></BusinessName>
+      <USAddress><CityNm>ERIE</CityNm><StateAbbreviationCd>PA</StateAbbreviationCd></USAddress>
+    </Filer>
+    <TaxYr>2024</TaxYr>
+  </ReturnHeader>
+  <ReturnData documentCnt="1">
+    <IRS990EZ documentId="IRS990EZ">
+      <GrossReceiptsAmt>111640</GrossReceiptsAmt>
+      <SalariesOtherCompEmplBnftAmt>38466</SalariesOtherCompEmplBnftAmt>
+      <TotalExpensesAmt>110548</TotalExpensesAmt>
+      <TotalRevenueAmt>111640</TotalRevenueAmt>
+      <Form990TotalAssetsGrp><BOYAmt>181765</BOYAmt><EOYAmt>182020</EOYAmt></Form990TotalAssetsGrp>
+      <PrimaryExemptPurposeTxt>PROVISION OF SUPPORT TO SAILING</PrimaryExemptPurposeTxt>
+      <WebsiteAddressTxt>N/A</WebsiteAddressTxt>
+      <OfficerDirectorTrusteeEmplGrp>
+        <PersonNm>CASEY DEMO</PersonNm>
+        <TitleTxt>PRESIDENT</TitleTxt>
+        <AverageHrsPerWkDevotedToPosRt>10.00</AverageHrsPerWkDevotedToPosRt>
+        <CompensationAmt>30000</CompensationAmt>
+        <EmployeeBenefitProgramAmt>1000</EmployeeBenefitProgramAmt>
+        <ExpenseAccountOtherAllwncAmt>500</ExpenseAccountOtherAllwncAmt>
+      </OfficerDirectorTrusteeEmplGrp>
+      <OfficerDirectorTrusteeEmplGrp>
+        <PersonNm>JANE EXAMPLE</PersonNm>
+        <TitleTxt>DIRECTOR</TitleTxt>
+        <AverageHrsPerWkDevotedToPosRt>1.00</AverageHrsPerWkDevotedToPosRt>
+        <CompensationAmt>0</CompensationAmt>
+      </OfficerDirectorTrusteeEmplGrp>
+    </IRS990EZ>
+  </ReturnData>
+</Return>

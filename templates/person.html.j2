@@ -1,0 +1,38 @@
+{#
+  templates/person.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : One person (by name): every organization whose latest return
+            lists them, with title, role and pay.
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+{% extends "base.html.j2" %}
+{% block title %}{{ name }}{% endblock %}
+{% block description %}Non-profit roles and pay listed for {{ name }} on IRS Form 990 filings.{% endblock %}
+{% block content %}
+<h1>{{ name }}</h1>
+<p class="lead">Listed by {{ roles | map(attribute="org.ein") | unique | list | length }}
+  organization{{ "s" if roles | length != 1 }}, with {{ roles | sum(attribute="total_comp") | usd }} in total reported pay.</p>
+<p class="caveat">IRS returns list people by name only, with no ID number. This page joins
+  everyone filed under the same name ("{{ key }}", ignoring middle names and initials), so it can
+  mix up different people who share a name. Check the city and state of each organization.</p>
+
+<div class="scroll">
+<table class="data">
+  <thead><tr><th scope="col">Organization</th><th scope="col">Place</th><th scope="col">Title</th>
+    <th scope="col">Role</th><th scope="col" class="num">Hours/week</th>
+    <th scope="col" class="num">Total pay</th><th scope="col" class="num">Tax year</th></tr></thead>
+  <tbody>
+  {% for r in roles %}
+  <tr><td>{% if r.org.has_page %}<a href="{{ root }}org/{{ org_slug(r.org) }}.html">{{ r.org.name | orgname }}</a>{% else %}<a href="https://projects.propublica.org/nonprofits/organizations/{{ r.org.ein }}">{{ r.org.name | orgname }}</a>{% endif %}</td>
+    <td>{{ (r.org.city | orgname) if r.org.city else "" }}{% if r.org.state %}, {{ r.org.state }}{% endif %}</td>
+    <td>{{ r.title or "" }}</td><td>{{ r.kinds }}</td>
+    <td class="num">{{ r.hours | hrs }}</td>
+    <td class="num">{{ r.total_comp | usd }}</td><td class="num">{{ r.org.tax_year or "" }}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+</div>
+<p class="muted">Organizations without a page here link to ProPublica Nonprofit Explorer.</p>
+{% endblock %}

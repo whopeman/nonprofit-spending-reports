@@ -1,0 +1,61 @@
+{#
+  templates/about.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : Data sources, definitions and caveats.
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+{% extends "base.html.j2" %}
+{% block title %}About the data{% endblock %}
+{% block content %}
+<h1>About the data</h1>
+
+<h2>Where it comes from</h2>
+<p>Most US tax-exempt organizations file an annual information return with the IRS:
+  Form 990 (larger organizations), Form 990-EZ (smaller ones) or Form 990-PF (private
+  foundations). These returns are public. The IRS publishes the ones filed electronically
+  as XML files on its
+  <a href="https://www.irs.gov/charities-non-profits/form-990-series-downloads">Form 990 series downloads</a>
+  page. This site reads every return in those files and keeps each organization's most
+  recent one. The
+  <a href="https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf">Exempt Organizations Business Master File</a>
+  adds each organization's category (NTEE code).</p>
+
+<h2>What the numbers mean</h2>
+<ul>
+  <li><strong>Rank</strong>: by total revenue on the latest return. The top list and the
+    pages cover organizations above a size threshold.</li>
+  <li><strong>Salary base</strong>: Form 990 Part IX lines 5, 6 and 7, which is pay to officers and
+    directors, to disqualified persons, and all other salaries and wages. Benefits, pensions
+    and payroll taxes are shown separately as "salaries, other pay and benefits" (Part I line 15).
+    For Form 990-EZ the IRS asks for one combined figure. For Form 990-PF it is officers' pay
+    plus other employee salaries and wages.</li>
+  <li><strong>Top 10 paid</strong>: the ten highest totals among the people the return lists
+    in Form 990 Part VII. Totals add reportable pay from the organization, reportable pay from
+    related organizations, and other pay (such as deferred pay and benefits). Organizations
+    must list officers, directors and trustees, key employees, and their five highest paid
+    employees earning over $100,000. Pay from related organizations does not come out of the
+    salary base, so the "top 10 share" can overstate slightly when it is large.</li>
+  <li><strong>Employees</strong>: the number of W-2s the organization filed for the calendar year,
+    which counts part time and seasonal staff the same as full time.</li>
+  <li><strong>Board members</strong>: people marked as an individual or institutional trustee or
+    director. On Form 990-EZ and 990-PF there is no such mark, so this site reads the title.</li>
+</ul>
+
+<h2>Matching people across organizations</h2>
+<p>Returns list people by name only. This site joins names after removing titles,
+  suffixes, middle names and initials, so "Dr. Jane Q. Example, PhD" and "JANE EXAMPLE" are
+  the same page. Different people with the same name are joined too. Every person page says so.</p>
+
+<h2>Limits</h2>
+<ul>
+  <li>Only electronically filed returns are included. Almost all large organizations e-file,
+    as the law has required since tax years beginning after July 1, 2019.</li>
+  <li>Churches and some religious organizations do not have to file, and do not appear.</li>
+  <li>Hospitals, universities and others often split into several related organizations,
+    each with its own return. Each is ranked on its own.</li>
+  <li>Figures are as filed and are not audited or corrected here.</li>
+</ul>
+{% if phase3 %}<h2>Possible violations</h2><p>Under review.</p>{% endif %}
+{% endblock %}

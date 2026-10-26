@@ -1,0 +1,55 @@
+{#
+  templates/home.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : Home page: search box and the top organizations by money flow.
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+{% extends "base.html.j2" %}
+{% block content %}
+<h1>Who runs America's largest non-profits, and who gets paid</h1>
+<p class="lead">
+  Boards, top salaries and the overall salary base of {{ "{:,}".format(org_count) }}
+  large tax-exempt organizations, from the returns they file with the IRS each year.
+  Every person listed links to every other non-profit that lists them.
+</p>
+
+<section class="search" aria-labelledby="search-h">
+  <h2 id="search-h">Search</h2>
+  <label for="q">Organization or person name</label>
+  <input id="q" type="search" autocomplete="off" spellcheck="false"
+         placeholder="e.g. Carnegie, or a person's name" data-root="{{ root }}">
+  <p id="search-status" class="muted" aria-live="polite">
+    Search needs JavaScript. Without it, use the <a href="browse/a.html">A to Z list</a>.
+  </p>
+  <ul id="results" class="results"></ul>
+</section>
+
+<section aria-labelledby="top-h">
+  <h2 id="top-h">Top {{ top_n }} by {{ rank_label }}</h2>
+  <p class="muted">From each organization's most recent return. "Top 10 share" is what the
+    10 best-paid people listed received, as a share of the organization's whole salary base.</p>
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th scope="col">#</th><th scope="col">Organization</th><th scope="col">State</th>
+      <th scope="col" class="num">Revenue</th><th scope="col" class="num">Expenses</th>
+      <th scope="col" class="num">Employees</th><th scope="col" class="num">Salary base</th>
+      <th scope="col" class="num">Top 10 share</th></tr></thead>
+    <tbody>
+    {% for o in top %}
+    <tr><td>{{ o.rank }}</td>
+      <td><a href="org/{{ org_slug(o) }}.html">{{ o.name | orgname }}</a></td>
+      <td>{{ o.state or "" }}</td>
+      <td class="num">{{ o.revenue | cusd }}</td>
+      <td class="num">{{ o.expenses | cusd }}</td>
+      <td class="num">{{ "{:,}".format(o.employees) if o.employees else "" }}</td>
+      <td class="num">{{ o.salaries | cusd }}</td>
+      <td class="num">{{ "%.1f%%" | format(o.top10_share * 100) if o.top10_share is not none else "" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</section>
+<script src="js/search.js" defer></script>
+{% endblock %}

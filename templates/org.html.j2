@@ -1,0 +1,109 @@
+{#
+  templates/org.html.j2
+  Project : Non-Profit Spending Reports
+  Date    : 2026-10-26
+  Purpose : One organization: money totals, salary base, top 10 paid,
+            board members and everyone else listed on its latest return.
+  Change log:
+    2026-10-26  0.1.0  Initial version.
+#}
+{% extends "base.html.j2" %}
+{% macro person_cell(r) %}{% if linked(r) %}<a href="{{ root }}{{ person_path(r.key) }}">{{ r.name | person }}</a>{% else %}{{ r.name | person }}{% endif %}{% endmacro %}
+{% block title %}{{ org.name | orgname }}{% endblock %}
+{% block description %}Board, top salaries and salary base of {{ org.name | orgname }}, from its IRS {{ org.form_name }}.{% endblock %}
+{% block content %}
+<h1>{{ org.name | orgname }}</h1>
+<p class="lead">
+  {% if org.city %}{{ org.city | orgname }}, {{ org.state }} &middot; {% endif %}EIN {{ org.ein_display }}
+  {% if org.category %} &middot; {{ org.category }}{% endif %}
+  &middot; Rank {{ "{:,}".format(org.rank) }} by {{ rank_label }}
+</p>
+{% if org.mission %}<p class="mission">{{ org.mission | capitalize }}</p>{% endif %}
+
+<section aria-labelledby="money-h">
+  <h2 id="money-h">Money, {{ org.form_name }} for tax year {{ org.tax_year }}</h2>
+  <dl class="facts">
+    <div><dt>Total revenue</dt><dd>{{ org.revenue | usd }}</dd></div>
+    <div><dt>Total expenses</dt><dd>{{ org.expenses | usd }}</dd></div>
+    <div><dt>Total assets</dt><dd>{{ org.assets | usd }}</dd></div>
+    <div><dt>Salary base (all salaries and wages)</dt><dd>{{ org.salaries | usd }}</dd></div>
+    <div><dt>Salaries, other pay and benefits</dt><dd>{{ org.comp_and_benefits | usd }}</dd></div>
+    <div><dt>Employees</dt><dd>{{ "{:,}".format(org.employees) if org.employees else "not reported" }}</dd></div>
+    {% if org.avg_salary %}<div><dt>Salary base per employee</dt><dd>{{ org.avg_salary | usd }}</dd></div>{% endif %}
+    {% if phase2 %}<div><dt>Program spending</dt><dd>{{ org.program_expenses | usd }}
+      {% if org.expenses and org.program_expenses %}({{ org.program_expenses | pct(org.expenses) }} of expenses){% endif %}</dd></div>{% endif %}
+  </dl>
+  <p class="muted">"Salary base" is Form 990 Part IX lines 5 to 7. "Employees" is everyone who
+    got a W-2 that year, full or part time. Form 990-EZ and 990-PF report pay differently;
+    see <a href="{{ root }}about.html">About the data</a>.</p>
+</section>
+
+<section aria-labelledby="top-h">
+  <h2 id="top-h">Top 10 paid people listed</h2>
+  {% if top10 %}
+  {% if org.top10_share is not none %}
+  <p class="callout">These {{ top10 | length }} people received <strong>{{ org.top10_comp | usd }}</strong>,
+    which is <strong>{{ org.top10_comp | pct(org.salaries) }}</strong> of the {{ org.salaries | usd }} salary base{% if org.employees %} shared by {{ "{:,}".format(org.employees) }} employees{% endif %}.</p>
+  {% endif %}
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th scope="col">Name</th><th scope="col">Title</th><th scope="col">Role</th>
+      <th scope="col" class="num">Hours/week</th><th scope="col" class="num">From this org</th>
+      <th scope="col" class="num">From related orgs</th><th scope="col" class="num">Other pay</th>
+      <th scope="col" class="num">Total</th></tr></thead>
+    <tbody>
+    {% for r in top10 %}
+    <tr><td>{{ person_cell(r) }}</td><td>{{ r.title or "" }}</td><td>{{ r.kinds }}</td>
+      <td class="num">{{ r.hours | hrs }}</td>
+      <td class="num">{{ r.comp_org | usd }}</td><td class="num">{{ r.comp_related | usd }}</td>
+      <td class="num">{{ r.comp_other | usd }}</td><td class="num">{{ r.total_comp | usd }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>No one listed on this return was paid.</p>
+  {% endif %}
+</section>
+
+<section aria-labelledby="board-h">
+  <h2 id="board-h">Board members ({{ board | length }})</h2>
+  {% if board %}
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th scope="col">Name</th><th scope="col">Title</th>
+      <th scope="col" class="num">Hours/week</th><th scope="col" class="num">Total pay</th></tr></thead>
+    <tbody>
+    {% for r in board %}
+    <tr><td>{{ person_cell(r) }}</td><td>{{ r.title or "" }}</td>
+      <td class="num">{{ r.hours | hrs }}</td>
+      <td class="num">{{ r.total_comp | usd }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>No board members are marked on this return.</p>
+  {% endif %}
+</section>
+
+{% if others %}
+<section aria-labelledby="other-h">
+  <h2 id="other-h">Other officers and employees listed ({{ others | length }})</h2>
+  <ul class="cols">
+  {% for r in others %}<li>{{ person_cell(r) }}{% if r.title %}, {{ r.title }}{% endif %}{% if r.total_comp %} ({{ r.total_comp | usd }}){% endif %}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section aria-labelledby="src-h">
+  <h2 id="src-h">Sources</h2>
+  <ul>
+    <li>IRS e-file return {{ org.object_id }} ({{ org.form_name }}, period ending {{ org.tax_period_end }}):
+      <a href="https://projects.propublica.org/nonprofits/organizations/{{ org.ein }}/{{ org.object_id }}/full">readable copy at ProPublica Nonprofit Explorer</a></li>
+    <li><a href="https://apps.irs.gov/app/eos/details/?ein={{ org.ein }}">IRS Tax Exempt Organization Search for EIN {{ org.ein_display }}</a></li>
+    {% if org.website %}<li>Organization website (as filed): {{ org.website | lower }}</li>{% endif %}
+  </ul>
+</section>
+{% endblock %}

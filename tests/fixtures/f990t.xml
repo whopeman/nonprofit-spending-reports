@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tests/fixtures/f990t.xml - Non-Profit Spending Reports - 2026-10-26 - Made-up Form 990-T header (not parsed in Phase 1). -->
+<Return xmlns="http://www.irs.gov/efile" returnVersion="2023v5.0">
+  <ReturnHeader binaryAttachmentCnt="0">
+    <TaxPeriodEndDt>2024-12-31</TaxPeriodEndDt>
+    <ReturnTypeCd>990T</ReturnTypeCd>
+    <Filer><EIN>990000001</EIN></Filer>
+    <TaxYr>2024</TaxYr>
+  </ReturnHeader>
+  <ReturnData documentCnt="1"><IRS990T documentId="IRS990T"/></ReturnData>
+</Return>
