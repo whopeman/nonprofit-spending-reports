@@ -38,3 +38,10 @@ def test_extract_batch_writes_rows(tmp_path):
     assert all(len(r.split("\t")) == len(PERSON_COLS) for r in people)
     # A second run skips a batch that is already done.
     assert extract_batch(z, tmp_path, 2025)[1] == -1
+
+
+def test_extract_batch_reports_incomplete_zip(tmp_path):
+    z = tmp_path / "2025_TEOS_XML_02A.zip"
+    z.write_bytes(b"PK\x03\x04 half a download")
+    assert extract_batch(z, tmp_path, 2025) == ("2025_TEOS_XML_02A", -2, 1)
+    assert not list(tmp_path.glob("*.tsv"))

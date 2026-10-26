@@ -14,6 +14,7 @@ Change log:
 from __future__ import annotations
 
 import os
+import zipfile
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -101,14 +102,20 @@ def extract_batch(zip_path: Path, out_dir: Path, source_year: int) -> tuple[str,
     errors: list[str] = []
     n = 0
     tmp_f, tmp_p = fpath.with_suffix(".part"), ppath.with_suffix(".part")
-    with (
-        open(tmp_f, "w", newline="", encoding="utf-8") as fh,
-        open(tmp_p, "w", newline="", encoding="utf-8") as ph,
-    ):
-        for f in iter_zip(zip_path, on_error=lambda oid, e: errors.append(f"{oid}\t{e}")):
-            fh.write("\t".join(filing_row(f, source_year)) + "\n")
-            ph.writelines("\t".join(r) + "\n" for r in person_rows(f))
-            n += 1
+    try:
+        with (
+            open(tmp_f, "w", newline="", encoding="utf-8") as fh,
+            open(tmp_p, "w", newline="", encoding="utf-8") as ph,
+        ):
+            for f in iter_zip(zip_path, on_error=lambda oid, e: errors.append(f"{oid}\t{e}")):
+                fh.write("\t".join(filing_row(f, source_year)) + "\n")
+                ph.writelines("\t".join(r) + "\n" for r in person_rows(f))
+                n += 1
+    except zipfile.BadZipFile:
+        # Still downloading, or damaged: leave no output so the next run retries it.
+        tmp_f.unlink(missing_ok=True)
+        tmp_p.unlink(missing_ok=True)
+        return stem, -2, 1
     os.replace(tmp_f, fpath)
     os.replace(tmp_p, ppath)
     (out_dir / f"{stem}.errors.txt").write_text("\n".join(errors), encoding="utf-8")

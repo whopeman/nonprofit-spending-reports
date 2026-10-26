@@ -1,4 +1,4 @@
-{
+﻿{
   "//": [
     "package.json - Project: Non-Profit Spending Reports - Date: 2026-10-26",
     "Purpose: dev-only Node tooling: validate generated HTML.",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "lint:html": "html-validate \"site/*.html\" \"site/org/*.html\" \"site/browse/*.html\""
+    "lint:html": "html-validate \"site/*.html\" \"site/org/*.html\" \"site/browse/*.html\" \"site/person/**/*.html\""
   },
   "devDependencies": {
     "html-validate": "^11.17.0"

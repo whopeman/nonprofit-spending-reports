@@ -183,11 +183,15 @@ def main(argv: list[str] | None = None) -> int:
         work = args.work or args.data / "work"
         results = extract_all(args.data, work, flags.filing_years, args.jobs)
         done = [r for r in results if r[1] >= 0]
+        bad = [r[0] for r in results if r[1] == -2]
+        skipped = len(results) - len(done) - len(bad)
         print(
-            f"{len(done)} batches parsed, {len(results) - len(done)} already done, "
-            f"{sum(r[1] for r in done):,} returns, {sum(r[2] for r in done):,} errors"
+            f"{len(done)} batches parsed, {skipped} already done, "
+            f"{sum(r[1] for r in done):,} returns, {sum(r[2] for r in done):,} bad returns"
         )
-        return 0
+        if bad:
+            print(f"unreadable zips (incomplete download?): {', '.join(bad)}")
+        return 1 if bad else 0
 
     from nppipe.render import Site
 

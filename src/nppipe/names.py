@@ -50,7 +50,47 @@ _PLACEHOLDER = re.compile(
     r"^(SEE\b|NONE\b|N/?A$|NOT APPLICABLE|VARIOUS|ATTACHED|STATEMENT\b|SCHEDULE\b|VACANT)"
 )
 _NOTES = re.compile(r"\(.*?\)|\[.*?\]")
-_SMALL = {"OF", "THE", "AND", "DE", "LA", "VAN", "VON", "DA", "DI", "DEL"}
+# Banks and companies filed as institutional trustees sometimes appear as PersonNm.
+_BUSINESS = re.compile(
+    r"\b(BANK|BANCORP|TRUST|TRUSTCO|CO|COMPANY|CORP|CORPORATION|INC|LLC|LLP|LP|LTD|PLLC|"
+    r"FOUNDATION|ASSOCIATION|FUND|PARTNERS|HOLDINGS|UNIVERSITY|COLLEGE|CHURCH|SERVICES|"
+    r"ADVISORS|CAPITAL|INVESTMENTS|MELLON|PNC|TRUIST|FIDUCIARY|NA)\b"
+)
+# Job titles that some filers run into the name field ("JANE DOE VP FINANCE").
+_ROLE_WORDS = {
+    "VP",
+    "SVP",
+    "EVP",
+    "AVP",
+    "CEO",
+    "CFO",
+    "COO",
+    "CIO",
+    "CTO",
+    "CMO",
+    "PRESIDENT",
+    "DIRECTOR",
+    "EXECUTIVE",
+    "TREASURER",
+    "SECRETARY",
+    "CHAIR",
+    "CHAIRMAN",
+    "CHAIRPERSON",
+    "CHAIRWOMAN",
+    "TRUSTEE",
+    "MANAGER",
+    "OFFICER",
+    "COUNSEL",
+    "VICE",
+    "BOARD",
+    "MEMBER",
+    "FORMER",
+    "INTERIM",
+    "ASSOCIATE",
+    "ASSISTANT",
+    "SENIOR",
+    "CHIEF",
+}
 
 
 def _fold(text: str) -> str:
@@ -79,10 +119,23 @@ def _tokens(raw: str) -> list[str]:
     return words
 
 
+def is_business(raw: str | None) -> bool:
+    t = _fold(raw or "").upper().replace(".", "")
+    words = re.split(r"[\s,]+", t.strip())
+    # "NA" alone after one word is also a surname (JOHN NA), so it needs a bank word too.
+    if words[-1:] == ["NA"] and len(words) == 2 and words[0] not in {"PNC", "BNY"}:
+        return False
+    return bool(_BUSINESS.search(t))
+
+
 def person_key(raw: str | None) -> str | None:
-    if is_placeholder(raw):
+    if is_placeholder(raw) or is_business(raw):
         return None
     words = [w for w in _tokens(raw or "") if re.fullmatch(r"[A-Z][A-Z-]*", w)]
+    for i, w in enumerate(words):
+        if i >= 2 and w in _ROLE_WORDS:
+            words = words[:i]
+            break
     if not words:
         return None
     named = [w for w in words if len(w) > 1] or words

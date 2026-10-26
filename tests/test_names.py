@@ -59,6 +59,32 @@ def test_placeholders(raw):
     assert person_key(raw) is None
 
 
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "BANK OF AMERICA NA",
+        "WELLS FARGO BANK N.A.",
+        "PNC BANK, NA",
+        "BNY MELLON",
+        "FIRST EXAMPLE TRUST COMPANY",
+        "ACME HOLDINGS LLC",
+        "NORTHERN TRUST CO",
+    ],
+)
+def test_businesses_get_no_person_key(raw):
+    assert person_key(raw) is None
+
+
+def test_surname_na_is_a_person():
+    assert person_key("JOHN NA") == "JOHN NA"
+
+
+def test_job_title_run_into_the_name_is_cut():
+    assert person_key("YVONNE MAHER VP ADVANCEMENT") == "YVONNE MAHER"
+    assert person_key("JOHN SMITH EXECUTIVE DIRECTOR") == "JOHN SMITH"
+    assert person_key("JOHN SMITH CEO") == "JOHN SMITH"
+
+
 def test_display_name_title_cases_and_strips_notes():
     assert display_name("JOHN Q SMITH (THROUGH 6/22)") == "John Q Smith"
     assert display_name("ANNE-MARIE O'NEIL") == "Anne-Marie O'Neil"
