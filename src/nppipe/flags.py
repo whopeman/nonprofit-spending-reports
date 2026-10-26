@@ -29,6 +29,8 @@ class Flags:
     rank_by: str
     top_n: int
     org_page_min_usd: int
+    page_by: str
+    page_top_pct: float
     phase2_spending: bool
     phase3_violations: bool
 
@@ -76,6 +78,12 @@ def load_flags(path: Path = DEFAULT_PATH, env: Mapping[str, str] | None = None) 
     min_usd = int(get("org_page_min_usd")[0])
     if min_usd < 0:
         raise ValueError("org_page_min_usd must not be negative")
+    page_by = str(get("page_by")[0]).strip().lower()
+    if page_by not in RANK_BY:
+        raise ValueError(f"page_by must be one of {', '.join(RANK_BY)}, got {page_by!r}")
+    top_pct = float(get("page_top_pct")[0])
+    if not 0 < top_pct <= 100:
+        raise ValueError("page_top_pct must be above 0 and at most 100")
 
     return Flags(
         use_gpu=boolean("use_gpu"),
@@ -83,6 +91,8 @@ def load_flags(path: Path = DEFAULT_PATH, env: Mapping[str, str] | None = None) 
         rank_by=rank_by,
         top_n=top_n,
         org_page_min_usd=min_usd,
+        page_by=page_by,
+        page_top_pct=top_pct,
         phase2_spending=boolean("phase2_spending"),
         phase3_violations=boolean("phase3_violations"),
     )

@@ -87,6 +87,7 @@ class Site:
         generated: str,
         top_n: int = 100,
         rank_by: str = "revenue",
+        page_rule: str = "",
         phase2_spending: bool = False,
         phase3_violations: bool = False,
     ):
@@ -113,6 +114,7 @@ class Site:
         self.env.globals.update(
             csp=CSP,
             version=__version__,
+            page_rule=page_rule,
             generated=generated,
             repo_url=REPO_URL,
             org_slug=org_slug,

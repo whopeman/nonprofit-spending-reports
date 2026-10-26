@@ -15,6 +15,8 @@ they file with the IRS. Planned home: <https://hopemanhorde.com/nonprofit-spendi
 The site is static HTML with one small search script:
 
 - **Home**: search box and the top 100 organizations by total revenue.
+- **Which organizations get pages**: the top 10% by total assets of those with at
+  least $10M in revenue (about 3,500), plus the top 100. People they list get pages.
 - **Organization pages**: revenue, expenses, assets, salary base and employees; the
   10 best-paid people listed and their share of the salary base; board members;
   everyone else listed; links to the filing.
@@ -113,6 +115,8 @@ Set in `config/flags.toml`, or override per run with `NP_<NAME>`, for example
 | `rank_by`           | `revenue`          | `revenue`, `expenses` or `assets`                   |
 | `top_n`             | `100`              | Organizations in the home page list                 |
 | `org_page_min_usd`  | `10000000`         | Organizations below this get no page of their own   |
+| `page_by`           | `assets`           | Measure for the page cut: `revenue`, `expenses`, `assets` |
+| `page_top_pct`      | `10`               | Only this top percent (by `page_by`) of those get pages |
 | `phase2_spending`   | `false`            | Show program spending versus internal costs         |
 | `phase3_violations` | `false`            | Show the violations review                          |
 

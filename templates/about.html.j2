@@ -24,8 +24,9 @@
 
 <h2>What the numbers mean</h2>
 <ul>
-  <li><strong>Rank</strong>: by total revenue on the latest return. The top list and the
-    pages cover organizations above a size threshold.</li>
+  <li><strong>Rank</strong>: by {{ rank_label }} on the latest return.</li>
+  <li><strong>Which organizations get a page</strong>: {{ page_rule or "the largest organizations" }}.
+    Anyone they list gets a person page, which also shows their roles at smaller organizations.</li>
   <li><strong>Salary base</strong>: Form 990 Part IX lines 5, 6 and 7, which is pay to officers and
     directors, to disqualified persons, and all other salaries and wages. Benefits, pensions
     and payroll taxes are shown separately as "salaries, other pay and benefits" (Part I line 15).

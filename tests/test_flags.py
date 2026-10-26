@@ -17,7 +17,8 @@ def flags_file(tmp_path):
     p = tmp_path / "flags.toml"
     p.write_text(
         'use_gpu = true\nfiling_years = [2024, 2025]\nrank_by = "revenue"\ntop_n = 100\n'
-        "org_page_min_usd = 1000000\nphase2_spending = false\nphase3_violations = false\n",
+        'org_page_min_usd = 1000000\npage_by = "assets"\npage_top_pct = 10\n'
+        "phase2_spending = false\nphase3_violations = false\n",
         encoding="utf-8",
     )
     return p
@@ -30,6 +31,8 @@ def test_reads_values_from_file(flags_file):
     assert flags.rank_by == "revenue"
     assert flags.top_n == 100
     assert flags.org_page_min_usd == 1_000_000
+    assert flags.page_by == "assets"
+    assert flags.page_top_pct == 10.0
     assert flags.phase2_spending is False
     assert flags.phase3_violations is False
 
@@ -74,3 +77,16 @@ def test_rejects_bad_year(flags_file):
 def test_rejects_non_positive_top_n(flags_file):
     with pytest.raises(ValueError, match="top_n"):
         load_flags(flags_file, env={"NP_TOP_N": "0"})
+
+
+def test_page_top_pct_override_and_range(flags_file):
+    assert load_flags(flags_file, env={"NP_PAGE_TOP_PCT": "25"}).page_top_pct == 25.0
+    with pytest.raises(ValueError, match="page_top_pct"):
+        load_flags(flags_file, env={"NP_PAGE_TOP_PCT": "0"})
+    with pytest.raises(ValueError, match="page_top_pct"):
+        load_flags(flags_file, env={"NP_PAGE_TOP_PCT": "101"})
+
+
+def test_rejects_unknown_page_by(flags_file):
+    with pytest.raises(ValueError, match="page_by"):
+        load_flags(flags_file, env={"NP_PAGE_BY": "vibes"})

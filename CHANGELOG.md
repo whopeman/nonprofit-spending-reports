@@ -28,4 +28,6 @@ All notable changes are listed here. The format follows
   and about pages; client-side search over static JSON.
 - Feature flags in `config/flags.toml` with `NP_*` environment overrides, including
   Phase 2 and Phase 3 switches (off).
+- `page_by` and `page_top_pct` flags: pages only for the top 10% by total assets of
+  organizations over the revenue threshold, to keep the file count down.
 - Security headers via `.htaccess` and a Content-Security-Policy meta tag.

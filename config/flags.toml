@@ -6,6 +6,7 @@
 #           an environment variable NP_<NAME> (e.g. NP_TOP_N=250).
 # Change log:
 #   2026-10-26  0.1.0  Initial flags.
+#   2026-10-26  0.1.0  Pages for the top 10% by assets only (page_by, page_top_pct).
 # =============================================================================
 
 # Use the NVIDIA GPU (RAPIDS cuDF) for fuzzy person matching. Reserved for
@@ -23,9 +24,16 @@ rank_by = "revenue"
 # Number of organizations on the home page top list.
 top_n = 100
 
-# Organizations get a page only when their ranking measure reaches this many
-# US dollars. Keeps the page count within shared-hosting file limits.
+# Organizations are considered for a page only when their ranking measure
+# (rank_by) reaches this many US dollars.
 org_page_min_usd = 10000000
+
+# Of those, only the top page_top_pct percent by page_by ("revenue",
+# "expenses" or "assets") get pages, which keeps the file count within
+# shared-hosting limits. The home page top list always gets pages.
+# Assets are the closest the returns come to an organization's overall value.
+page_by = "assets"
+page_top_pct = 10
 
 # Phase 2: charitable (program) spending versus internal costs.
 phase2_spending = false

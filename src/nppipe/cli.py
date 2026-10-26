@@ -200,6 +200,11 @@ def main(argv: list[str] | None = None) -> int:
         generated=dt.date.today().isoformat(),
         top_n=flags.top_n,
         rank_by=flags.rank_by,
+        page_rule=(
+            f"the top {flags.page_top_pct:g}% by total {flags.page_by} of organizations with "
+            f"at least ${flags.org_page_min_usd:,} in total {flags.rank_by}, plus the top "
+            f"{flags.top_n} list"
+        ),
         phase2_spending=flags.phase2_spending,
         phase3_violations=flags.phase3_violations,
     )

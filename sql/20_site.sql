@@ -7,9 +7,11 @@
 --                     salary base and how much of it the top 10 listed get
 --           - role:   everyone listed on those returns
 --           - person: people (by normalized name) at organizations with pages
--- Usage   : psql -v rank_by=revenue -v min_usd=10000000 -f sql/20_site.sql
+-- Usage   : psql -v rank_by=revenue -v min_usd=10000000 -v page_by=assets
+--                -v top_pct=10 -v top_n=100 -f sql/20_site.sql
 -- Change log:
 --   2026-10-26  0.1.0  Initial version.
+--   2026-10-26  0.1.0  Pages only for the top top_pct percent by page_by.
 -- =============================================================================
 \set ON_ERROR_STOP on
 DROP SCHEMA IF EXISTS site CASCADE;
@@ -47,7 +49,17 @@ FROM (SELECT ein, row_number() OVER (ORDER BY measure DESC NULLS LAST, ein) AS r
       FROM site.org) r
 WHERE r.ein = o.ein;
 
-UPDATE site.org SET has_page = coalesce(measure, 0) >= :min_usd;
+-- Pages: among organizations whose measure reaches min_usd, the top top_pct
+-- percent by page_by; plus the home page top list (rank <= top_n).
+WITH eligible AS (
+  SELECT ein, CASE :'page_by' WHEN 'revenue' THEN revenue WHEN 'expenses' THEN expenses
+                ELSE assets END AS value
+  FROM site.org WHERE coalesce(measure, 0) >= :min_usd
+), cut AS (
+  SELECT ein FROM eligible ORDER BY value DESC NULLS LAST, ein
+  LIMIT ceil((SELECT count(*) FROM eligible) * :top_pct / 100.0)
+)
+UPDATE site.org o SET has_page = (o.rank <= :top_n OR o.ein IN (SELECT ein FROM cut));
 
 -- Everyone listed on each organization's latest return.
 CREATE TABLE site.role AS

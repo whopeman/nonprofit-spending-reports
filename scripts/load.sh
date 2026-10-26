@@ -52,11 +52,15 @@ raw() {
 }
 
 site() {
-  local rank_by min_usd
+  local rank_by min_usd page_by top_pct top_n
   rank_by="$(flag rank_by)"
   min_usd="$(flag org_page_min_usd)"
-  log "build site schema (rank by $rank_by, pages from \$$min_usd)"
-  psql_db -v rank_by="$rank_by" -v min_usd="$min_usd" -f "$HERE/sql/20_site.sql"
+  page_by="$(flag page_by)"
+  top_pct="$(flag page_top_pct)"
+  top_n="$(flag top_n)"
+  log "build site schema (rank by $rank_by; pages: top $top_pct% by $page_by of orgs from \$$min_usd)"
+  psql_db -v rank_by="$rank_by" -v min_usd="$min_usd" -v page_by="$page_by" \
+    -v top_pct="$top_pct" -v top_n="$top_n" -f "$HERE/sql/20_site.sql"
   psql_db -Atc "SELECT 'orgs with pages', count(*) FROM site.org WHERE has_page
                 UNION ALL SELECT 'people with pages', count(*) FROM site.person"
 }
