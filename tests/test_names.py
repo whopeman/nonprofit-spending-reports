@@ -66,6 +66,7 @@ def test_placeholders(raw):
         "WELLS FARGO BANK N.A.",
         "PNC BANK, NA",
         "BNY MELLON",
+        "KEYBANK",
         "FIRST EXAMPLE TRUST COMPANY",
         "ACME HOLDINGS LLC",
         "NORTHERN TRUST CO",
