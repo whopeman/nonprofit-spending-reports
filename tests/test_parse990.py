@@ -9,7 +9,9 @@ Change log:
 """
 
 import io
+import struct
 import zipfile
+import zlib
 from pathlib import Path
 
 import pytest
@@ -125,3 +127,42 @@ def test_iter_zip_reads_every_member(tmp_path):
         filings.append(f)
     assert [f.object_id for f in filings] == ["202500000000000001"]
     assert errors == ["202500000000000003"]
+
+
+def _deflate64_zip(tmp_path, member: str, payload: bytes, file_size: int | None = None):
+    """A zip whose member is Deflate64-compressed (the standard library cannot write these)."""
+    import inflate64
+
+    d = inflate64.Deflater()
+    packed = d.deflate(payload) + d.flush()
+    path = tmp_path / "d64.zip"
+    with zipfile.ZipFile(path, "w", zipfile.ZIP_STORED) as z:
+        z.writestr(member, packed)
+    raw = bytearray(path.read_bytes())
+    # Rewrite method (9), CRC and uncompressed size in the local and central headers.
+    crc = zlib.crc32(payload)
+    size = len(payload) if file_size is None else file_size
+    for sig, method_at, crc_at, usize_at in (
+        (b"PK\x03\x04", 8, 14, 22),
+        (b"PK\x01\x02", 10, 16, 24),
+    ):
+        i = raw.index(sig)
+        struct.pack_into("<H", raw, i + method_at, 9)
+        struct.pack_into("<I", raw, i + crc_at, crc)
+        struct.pack_into("<I", raw, i + usize_at, size)
+    path.write_bytes(bytes(raw))
+    return path
+
+
+def test_reads_deflate64_members(tmp_path):
+    xml = (FIX / "f990.xml").read_bytes()
+    path = _deflate64_zip(tmp_path, "b/202500000000000001_public.xml", xml)
+    assert [f.ein for f in iter_zip(path)] == ["990000001"]
+
+
+def test_deflate64_size_mismatch_is_an_error(tmp_path):
+    xml = (FIX / "f990.xml").read_bytes()
+    path = _deflate64_zip(tmp_path, "b/202500000000000001_public.xml", xml, len(xml) + 5)
+    errors = []
+    assert list(iter_zip(path, on_error=lambda oid, e: errors.append(str(e)))) == []
+    assert "CRC" in errors[0]

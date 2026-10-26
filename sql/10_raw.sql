@@ -12,7 +12,7 @@ CREATE SCHEMA IF NOT EXISTS raw;
 
 DROP TABLE IF EXISTS raw.filing CASCADE;
 CREATE TABLE raw.filing (
-  object_id         text PRIMARY KEY,
+  object_id         text NOT NULL,
   ein               text NOT NULL,
   name              text,
   city              text,
@@ -48,8 +48,7 @@ CREATE TABLE raw.person (
   former       boolean,
   comp_org     bigint,
   comp_related bigint,
-  comp_other   bigint,
-  PRIMARY KEY (object_id, seq)
+  comp_other   bigint
 );
 
 -- EO BMF: https://www.irs.gov/charities-non-profits/exempt-organizations-business-master-file-extract-eo-bmf

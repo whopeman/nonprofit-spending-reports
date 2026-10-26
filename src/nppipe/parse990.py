@@ -11,17 +11,21 @@ Usage   : parse_return(xml_bytes, object_id) -> Filing | None
           for f in iter_zip(Path("2025_TEOS_XML_01A.zip")): ...
 Change log:
   2026-10-26  0.1.0  Initial version.
+  2026-10-26  0.1.0  Read Deflate64 batches (some 2025-2026 zips) via inflate64.
 """
 
 from __future__ import annotations
 
 import re
+import struct
 import zipfile
+import zlib
 from collections.abc import Callable, Iterator
 from dataclasses import dataclass, field
 from pathlib import Path
 from xml.etree.ElementTree import Element, ParseError
 
+import inflate64
 from defusedxml import DefusedXmlException
 from defusedxml.ElementTree import fromstring
 
@@ -29,6 +33,8 @@ from nppipe.names import is_placeholder, person_key
 
 NS = "{http://www.irs.gov/efile}"
 FORMS = ("990", "990EZ", "990PF")
+DEFLATE64 = 9  # zip compression method id
+MAX_MEMBER_BYTES = 64 * 1024 * 1024  # the largest real returns are a few MB
 _BOARD = re.compile(r"DIRECTOR|TRUSTEE|BOARD|CHAIR|GOVERNOR|MEMBER|REGENT")
 _NOT_BOARD = re.compile(r"(EXECUTIVE|MANAGING|ASSOCIATE|ASSISTANT|PROGRAM|FINANCE|MEDICAL)\s+DIR")
 _OFFICER = re.compile(
@@ -287,6 +293,29 @@ def object_id_of(member: str) -> str:
     return Path(member).name.removesuffix(".xml").removesuffix("_public")
 
 
+def read_member(z: zipfile.ZipFile, info: zipfile.ZipInfo) -> bytes:
+    """Read one member. Some IRS batches use Deflate64 (method 9), which the
+    standard library cannot read, so those are inflated with inflate64.
+    Oversized members are refused (zip bomb guard)."""
+    if info.file_size > MAX_MEMBER_BYTES:
+        raise ValueError(f"{info.filename} is {info.file_size:,} bytes, over the limit")
+    if info.compress_type != DEFLATE64:
+        return z.read(info)
+    fp = z.fp
+    if fp is None:
+        raise ValueError("zip file is closed")
+    fp.seek(info.header_offset)
+    header = fp.read(30)
+    if header[:4] != b"PK\x03\x04":
+        raise ValueError(f"bad local header for {info.filename}")
+    name_len, extra_len = struct.unpack("<HH", header[26:30])
+    fp.seek(info.header_offset + 30 + name_len + extra_len)
+    data = inflate64.Inflater().inflate(fp.read(info.compress_size))
+    if len(data) != info.file_size or zlib.crc32(data) != info.CRC:
+        raise ValueError(f"Deflate64 member {info.filename} failed its size or CRC check")
+    return data
+
+
 def iter_zip(
     path: Path,
     wanted: set[str] | None = None,
@@ -294,14 +323,14 @@ def iter_zip(
 ) -> Iterator[Filing]:
     """Parse every return in one TEOS batch zip, optionally only `wanted` object ids."""
     with zipfile.ZipFile(path) as z:
-        for member in z.namelist():
-            if not member.endswith(".xml"):
+        for info in z.infolist():
+            if not info.filename.endswith(".xml"):
                 continue
-            oid = object_id_of(member)
+            oid = object_id_of(info.filename)
             if wanted is not None and oid not in wanted:
                 continue
             try:
-                f = parse_return(z.read(member), oid)
+                f = parse_return(read_member(z, info), oid)
             except ValueError as e:
                 if on_error:
                     on_error(oid, e)

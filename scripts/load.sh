@@ -47,8 +47,7 @@ raw() {
   for r in 1 2 3 4; do
     psql_db -c "\\copy raw.bmf FROM '$DATA/bmf/eo$r.csv' WITH (FORMAT csv, HEADER true)"
   done
-  psql_db -c "CREATE INDEX ON raw.filing (ein); CREATE INDEX ON raw.person (object_id);
-              ANALYZE raw.filing; ANALYZE raw.person; ANALYZE raw.bmf;"
+  psql_db -f "$HERE/sql/15_dedupe.sql"
   psql_db -Atc "SELECT form, count(*) FROM raw.filing GROUP BY 1 ORDER BY 1"
 }
 
