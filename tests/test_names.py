@@ -90,3 +90,6 @@ def test_display_name_title_cases_and_strips_notes():
     assert display_name("JOHN Q SMITH (THROUGH 6/22)") == "John Q Smith"
     assert display_name("ANNE-MARIE O'NEIL") == "Anne-Marie O'Neil"
     assert display_name("MARY MCDONALD III") == "Mary McDonald III"
+    assert display_name("WARNER N MACLIN III JD") == "Warner N Maclin III JD"
+    assert display_name("JOHN M RUSCETTI CFA") == "John M Ruscetti CFA"
+    assert display_name("CHARLES DOUGHERTY JR") == "Charles Dougherty Jr"

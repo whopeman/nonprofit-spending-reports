@@ -145,7 +145,7 @@ def person_key(raw: str | None) -> str | None:
 
 
 def _title_word(w: str) -> str:
-    if w.upper() in {"II", "III", "IV"}:
+    if w.upper().replace(".", "") in SUFFIXES - {"JR", "SR"}:
         return w.upper()
     out = "-".join(p[:1].upper() + p[1:].lower() for p in w.split("-"))
     out = re.sub(r"^(Mc|O')([a-z])", lambda m: m.group(1) + m.group(2).upper(), out)

@@ -18,7 +18,7 @@
   {% if org.category %} &middot; {{ org.category }}{% endif %}
   &middot; Rank {{ "{:,}".format(org.rank) }} by {{ rank_label }}
 </p>
-{% if org.mission %}<p class="mission">{{ org.mission | capitalize }}</p>{% endif %}
+{% if org.mission %}<p class="mission">{{ org.mission | sentence }}</p>{% endif %}
 
 <section aria-labelledby="money-h">
   <h2 id="money-h">Money, {{ org.form_name }} for tax year {{ org.tax_year }}</h2>

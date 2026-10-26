@@ -62,6 +62,13 @@ def hours(h) -> str:
     return "" if h is None else f"{h:g}"
 
 
+def sentence(text: str | None) -> str:
+    """Filers often type in all capitals; soften that, but keep mixed case as filed."""
+    if not text:
+        return ""
+    return text[:1].upper() + text[1:].lower() if text.isupper() else text
+
+
 def browse_letter(name: str) -> str:
     c = (name or "#")[:1].upper()
     return c.lower() if c.isalpha() else "0"
@@ -98,6 +105,7 @@ class Site:
             usd=usd,
             cusd=compact_usd,
             hrs=hours,
+            sentence=sentence,
             pct=pct,
             person=display_name,
             orgname=nice_org_name,
