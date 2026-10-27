@@ -9,7 +9,7 @@
 #}
 {% extends "base.html.j2" %}
 {% macro person_cell(r) %}{% if linked(r) %}<a href="{{ root }}{{ person_path(r.key) }}">{{ r.name | person }}</a>{% else %}{{ r.name | person }}{% endif %}{% endmacro %}
-{% block title %}{{ org.name | orgname }}{% endblock %}
+{% block title %}{{ org.name | orgname | short_title }}{% endblock %}
 {% block description %}Board, top salaries and salary base of {{ org.name | orgname }}, from its IRS {{ org.form_name }}.{% endblock %}
 {% block content %}
 <h1>{{ org.name | orgname }}</h1>

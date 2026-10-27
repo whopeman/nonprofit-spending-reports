@@ -8,7 +8,7 @@
     2026-10-26  0.1.0  Initial version.
 #}
 {% extends "base.html.j2" %}
-{% block title %}{{ name }}{% endblock %}
+{% block title %}{{ name | short_title }}{% endblock %}
 {% block description %}Non-profit roles and pay listed for {{ name }} on IRS Form 990 filings.{% endblock %}
 {% block content %}
 <h1>{{ name }}</h1>

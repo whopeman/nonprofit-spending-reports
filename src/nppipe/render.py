@@ -24,6 +24,7 @@ from collections.abc import Iterable
 from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
+from markupsafe import escape
 
 from nppipe import __version__
 from nppipe.format import compact_usd, pct, slugify, usd
@@ -60,6 +61,16 @@ def person_path(key: str) -> str:
 
 def hours(h) -> str:
     return "" if h is None else f"{h:g}"
+
+
+def short_title(text: str, limit: int = 54) -> str:
+    """Shorten text so its HTML-escaped form fits in limit characters (the site
+    name follows it in <title>, and validators count &amp; in full)."""
+    if len(escape(text)) <= limit:
+        return text
+    while text and len(escape(text)) > limit - 1:
+        text = text[:-1]
+    return text.rstrip(" ,&-") + "…"
 
 
 def sentence(text: str | None) -> str:
@@ -107,6 +118,7 @@ class Site:
             cusd=compact_usd,
             hrs=hours,
             sentence=sentence,
+            short_title=short_title,
             pct=pct,
             person=display_name,
             orgname=nice_org_name,

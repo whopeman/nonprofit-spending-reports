@@ -119,3 +119,17 @@ def test_phase_flags_hide_unbuilt_sections(tmp_path):
     s2.build(*demo_data())
     page2 = next((tmp_path / "p2" / "org").glob("example-museums*.html")).read_text("utf-8")
     assert "Program spending" in page2
+
+
+def test_page_titles_fit_70_characters(tmp_path):
+    from dataclasses import replace
+
+    orgs, roles = demo_data()
+    long = replace(orgs[0], name="EXAMPLE & SONS' " * 15 + "MUSEUMS")
+    roles = [replace(r, org=long) if r.org.ein == long.ein else r for r in roles]
+    Site(out_dir=tmp_path, generated="2026-10-26", top_n=2).build([long, *orgs[1:]], roles)
+    for page in tmp_path.rglob("*.html"):
+        html = page.read_text(encoding="utf-8")
+        title = html[html.index("<title>") + 7 : html.index("</title>")]
+        # html-validate counts the source text, so entities such as &amp; count in full.
+        assert len(title) <= 70, page.name
