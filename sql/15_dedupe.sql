@@ -8,9 +8,11 @@
 -- Usage   : psql -d nonprofit -f sql/15_dedupe.sql   (scripts/load.sh runs it)
 -- Change log:
 --   2026-10-26  0.1.0  Initial version.
+--   2026-10-28  0.1.0  Drop leftovers of a run that stopped part way (torch).
 -- =============================================================================
 \set ON_ERROR_STOP on
 
+DROP TABLE IF EXISTS raw.filing_dedup, raw.person_dedup;
 CREATE TABLE raw.filing_dedup AS
 SELECT DISTINCT ON (object_id) * FROM raw.filing ORDER BY object_id, source_year DESC;
 DROP TABLE raw.filing;
