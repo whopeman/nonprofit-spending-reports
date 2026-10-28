@@ -12,6 +12,10 @@
 #           scripts/fetch.sh xml 2025 2026
 # Change log:
 #   2026-10-26  0.1.0  Initial version.
+#   2026-10-28  0.1.0  A zip counts as downloaded when its central directory
+#                      reads; "zipfile -t" failed on every Deflate64 batch, so
+#                      curl re-requested them and exited 33, stopping the run
+#                      (torch).
 # =============================================================================
 set -euo pipefail
 
@@ -38,8 +42,11 @@ if [ "$what" = xml ] || [ "$what" = all ]; then
     get "$XML/$y/index_$y.csv" "$DATA/xml/$y/index_$y.csv"
     # Batch names come from the download page (only ${y}_TEOS_XML_*.zip).
     for f in $(grep -oE "${y}_TEOS_XML_[0-9A-Z]+\.zip" <<<"$page" | sort -u); do
-      # A finished zip passes the integrity test and is not fetched again.
-      if [ -s "$DATA/xml/$y/$f" ] && python3 -m zipfile -t "$DATA/xml/$y/$f" >/dev/null 2>&1; then
+      # A finished zip has its central directory (written last) and is not
+      # fetched again. Members are not decompressed here: the standard library
+      # cannot read Deflate64, and extract checks every member's CRC anyway.
+      if [ -s "$DATA/xml/$y/$f" ] && python3 -c 'import sys, zipfile; zipfile.ZipFile(sys.argv[1]).close()' \
+          "$DATA/xml/$y/$f" >/dev/null 2>&1; then
         continue
       fi
       get "$XML/$y/$f" "$DATA/xml/$y/$f"
