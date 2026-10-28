@@ -22,3 +22,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 .ruff_cache/
+
+# Local-only Claude Code instructions (not published)
+CLAUDE.md
