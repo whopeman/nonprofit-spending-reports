@@ -8,6 +8,7 @@ Usage   : nppipe extract [--data ~/np-data] [--work ~/np-data/work] [--jobs N]
           nppipe build [--out site]   render the site from the PostgreSQL database
 Change log:
   2026-10-26  0.1.0  Initial version.
+  2026-10-28  0.1.0  build reports organization pages only.
 """
 
 from __future__ import annotations
@@ -214,7 +215,7 @@ def main(argv: list[str] | None = None) -> int:
         from nppipe.db import build_from_db
 
         counts = build_from_db(site)
-        print(f"{counts['orgs']:,} organization pages, {counts['people']:,} person pages")
+        print(f"{counts['orgs']:,} organization pages")
     print(f"wrote site to {args.out}")
     return 0
 

@@ -4,10 +4,11 @@ Project : Non-Profit Spending Reports
 Date    : 2026-10-26
 Purpose : Render the site from the "site" schema built by sql/20_site.sql.
           Roles are streamed with server-side cursors, grouped by
-          organization and then by person, so memory stays modest.
+          organization, so memory stays modest.
 Usage   : build_from_db(site, dsn="dbname=nonprofit")
 Change log:
   2026-10-26  0.1.0  Initial version.
+  2026-10-28  0.1.0  Organization pages only; no person pages.
 """
 
 from __future__ import annotations
@@ -34,12 +35,10 @@ ROLE_COLS = (
 
 
 def _orgs(conn, schema: str) -> dict[str, Org]:
-    """Organizations with pages, plus any other that lists a person with a page."""
-    q = sql.SQL(
-        """SELECT {cols} FROM {s}.org o
-           WHERE o.has_page OR EXISTS (
-             SELECT 1 FROM {s}.role r JOIN {s}.person p USING (key) WHERE r.ein = o.ein)"""
-    ).format(cols=sql.SQL(ORG_COLS), s=sql.Identifier(schema))
+    """Organizations with pages."""
+    q = sql.SQL("SELECT {cols} FROM {s}.org o WHERE o.has_page").format(
+        cols=sql.SQL(ORG_COLS), s=sql.Identifier(schema)
+    )
     with conn.cursor(name="orgs") as cur:
         cur.itersize = 50_000
         cur.execute(q)
@@ -62,16 +61,12 @@ def _iter(conn, name: str, q: sql.Composed) -> Iterator[tuple]:
 
 def build_from_db(site: Site, dsn: str | None = None, schema: str = "site") -> dict:
     dsn = dsn or os.environ.get("NP_DSN", "dbname=nonprofit")
-    counts = {"orgs": 0, "people": 0}
+    counts = {"orgs": 0}
     s = sql.Identifier(schema)
     site.common_pages()
     with psycopg.connect(dsn) as conn:
         orgs = _orgs(conn, schema)
-        with conn.cursor() as cur:
-            cur.execute(sql.SQL("SELECT key FROM {}.person").format(s))
-            person_keys = {r[0] for r in cur}
-
-        paged = sorted((o for o in orgs.values() if o.has_page), key=lambda o: o.rank)
+        paged = sorted(orgs.values(), key=lambda o: o.rank)
         site.home(paged, len(paged))
 
         q = sql.SQL(
@@ -80,7 +75,7 @@ def build_from_db(site: Site, dsn: str | None = None, schema: str = "site") -> d
         ).format(cols=sql.SQL(ROLE_COLS), s=s)
         for ein, rows in groupby(_iter(conn, "org_roles", q), key=lambda r: r[0]):
             roles = [x for x in (_role(r, orgs) for r in rows) if x]
-            site.org_page(orgs[ein], roles, person_keys)
+            site.org_page(orgs[ein], roles)
             counts["orgs"] += 1
         # Organizations with a page but nobody listed still get a page.
         with conn.cursor() as cur:
@@ -88,16 +83,7 @@ def build_from_db(site: Site, dsn: str | None = None, schema: str = "site") -> d
             listed = {r[0] for r in cur}
         for o in paged:
             if o.ein not in listed:
-                site.org_page(o, [], person_keys)
+                site.org_page(o, [])
                 counts["orgs"] += 1
-
-        q = sql.SQL(
-            "SELECT r.key, {cols} FROM {s}.role r JOIN {s}.person p USING (key) ORDER BY r.key"
-        ).format(cols=sql.SQL(ROLE_COLS), s=s)
-        for key, rows in groupby(_iter(conn, "person_roles", q), key=lambda r: r[0]):
-            roles = [x for x in (_role(r[1:], orgs) for r in rows) if x]
-            if roles:
-                site.person_page(key, roles)
-                counts["people"] += 1
     site.finish()
     return counts

@@ -5,6 +5,7 @@
   Purpose : Overview, data sources, setup, build, test and deploy instructions.
   Change log:
     2026-10-26  0.1.0  Created.
+    2026-10-28  0.1.0  Org pages list leadership and top 10 paid only; no person pages.
 -->
 
 # Non-Profit Spending Reports
@@ -16,19 +17,18 @@ The site is static HTML with one small search script:
 
 - **Home**: search box and the top 100 organizations by total revenue.
 - **Which organizations get pages**: the top 10% by total assets of those with at
-  least $10M in revenue (about 3,500), plus the top 100. People they list get pages.
+  least $10M in revenue (about 3,500), plus the top 100.
 - **Organization pages**: revenue, expenses, assets, salary base and employees; the
-  10 best-paid people listed and their share of the salary base; board members;
-  everyone else listed; links to the filing.
-- **Person pages**: every organization whose latest return lists that name, with
-  title, role, hours and pay.
+  leadership (officers, key employees, directors and trustees) with their pay where
+  reported; the 10 best-paid people listed and their share of the salary base; links
+  to the filing.
 - **A to Z** pages, so everything can be reached without JavaScript.
 
 ## Phases
 
 | Phase | What                                                                 | Flag                |
 | ----- | -------------------------------------------------------------------- | ------------------- |
-| 1     | Searchable site, top 100, org and person pages (this release)        | always on           |
+| 1     | Searchable site, top 100 and organization pages (this release)       | always on           |
 | 2     | Charitable (program) spending versus internal costs                  | `phase2_spending`   |
 | 3     | Public-source review of possible violations of exempt status         | `phase3_violations` |
 
@@ -132,8 +132,8 @@ npm run deploy -- -ConfigPath ../nonprofit-spending-reports/deploy.local.json -E
 
 ## Caveats
 
-- People are matched by name only (first and last), so different people with the
-  same name share a page. Every person page says so.
+- Organization pages show leadership and the top 10 paid only. Other highly paid
+  employees and former officers are in the filing, linked from each page.
 - Figures are as filed with the IRS and are not audited here.
 
 ## Contributing

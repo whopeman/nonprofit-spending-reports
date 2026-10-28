@@ -6,6 +6,7 @@ Purpose : The demo site renders, every internal link resolves, names are
           escaped, and pages carry the Content-Security-Policy.
 Change log:
   2026-10-26  0.1.0  Initial tests.
+  2026-10-28  0.1.0  Leadership and top 10 only; no person pages.
 """
 
 import json
@@ -15,7 +16,7 @@ from html.parser import HTMLParser
 import pytest
 
 from nppipe.cli import demo_data
-from nppipe.render import Site, person_slug
+from nppipe.render import Site
 
 
 class Links(HTMLParser):
@@ -42,7 +43,7 @@ def test_pages_exist(site):
     assert (site / "about.html").exists()
     assert (site / ".htaccess").exists()
     assert len(list((site / "org").glob("*.html"))) == 3
-    assert len(list((site / "person").rglob("*.html"))) >= 4
+    assert not (site / "person").exists()
 
 
 def test_internal_links_resolve(site):
@@ -59,7 +60,7 @@ def test_internal_links_resolve(site):
                 continue  # the link up to hopemanhorde.com
             assert target.exists(), f"{page.name} links to missing {href}"
             checked += 1
-    assert checked > 20
+    assert checked > 10
 
 
 def test_home_lists_top_n_by_rank(site):
@@ -69,21 +70,35 @@ def test_home_lists_top_n_by_rank(site):
     assert top.index("Example Museums") < top.index("Sample Hospital")
 
 
-def test_org_page_shows_board_top10_and_share(site):
+def _section(page: str, heading_id: str) -> str:
+    start = page.index(f'id="{heading_id}"')
+    return page[start : page.index("</section>", start)]
+
+
+def test_org_page_shows_leadership_top10_and_share(site):
     page = next((site / "org").glob("example-museums*.html")).read_text(encoding="utf-8")
-    assert "Board members" in page
+    assert "Leadership" in page
     assert "Top 10 paid" in page
+    assert "Board members" not in page
+    assert "Other officers" not in page
     assert "$100,000,000" in page  # salary base
     assert "1.5%" in page  # top 10 share of the salary base
-    assert person_slug("JANE EXAMPLE") in page
+    assert "person/" not in page  # no person pages to link to
 
 
-def test_person_page_lists_every_org(site):
-    page = next((site / "person").rglob(f"{person_slug('SAM SAMPLE')}.html"))
-    html = page.read_text(encoding="utf-8")
-    assert "Example Museums" in html
-    assert "Sample Family Foundation" in html
-    assert "same name" in html  # matching caveat
+def test_leadership_lists_officers_and_board_with_pay(site):
+    page = next((site / "org").glob("example-museums*.html")).read_text(encoding="utf-8")
+    lead = _section(page, "lead-h")
+    assert lead.index("Jane Q Example") < lead.index("Sam Sample")  # officers first, best paid
+    assert "$1,010,000" in lead  # Jane's total pay
+    assert "First Example Trust Co" in lead  # institutional trustee
+    assert "None reported" in lead  # unpaid board members
+    assert "Pat Placeholder" not in lead  # highly paid employee, not a leader
+    assert "Old Former" not in lead  # former officer
+    top = _section(page, "top-h")
+    assert "Pat Placeholder" in top
+    assert "Old Former" in top
+    assert "Sam Sample" not in top  # unpaid
 
 
 def test_names_are_escaped(site):
@@ -99,15 +114,8 @@ def test_csp_on_every_page(site):
 def test_search_index(site):
     orgs = json.loads((site / "search" / "orgs.json").read_text(encoding="utf-8"))
     assert {o[0] for o in orgs} >= {"Example Museums of Springfield"}
-    shard = json.loads((site / "search" / "people-s.json").read_text(encoding="utf-8"))
-    assert any(p[0] == "Sam Sample" for p in shard)
+    assert not list((site / "search").glob("people-*.json"))
     assert (site / "js" / "search.js").exists()
-
-
-def test_person_slug_is_stable_and_safe():
-    assert person_slug("JOHN SMITH") == person_slug("JOHN SMITH")
-    assert person_slug("ANNE-MARIE ONEIL") != person_slug("ANNE MARIE-ONEIL")
-    assert re.fullmatch(r"[a-z0-9-]+", person_slug("JOHN SMITH"))
 
 
 def test_phase_flags_hide_unbuilt_sections(tmp_path):

@@ -5,6 +5,7 @@
   Purpose : Data sources, definitions and caveats.
   Change log:
     2026-10-26  0.1.0  Initial version.
+    2026-10-28  0.1.0  Leadership definition; no person pages.
 #}
 {% extends "base.html.j2" %}
 {% block title %}About the data{% endblock %}
@@ -25,8 +26,7 @@
 <h2>What the numbers mean</h2>
 <ul>
   <li><strong>Rank</strong>: by {{ rank_label }} on the latest return.</li>
-  <li><strong>Which organizations get a page</strong>: {{ page_rule or "the largest organizations" }}.
-    Anyone they list gets a person page, which also shows their roles at smaller organizations.</li>
+  <li><strong>Which organizations get a page</strong>: {{ page_rule or "the largest organizations" }}.</li>
   <li><strong>Salary base</strong>: Form 990 Part IX lines 5, 6 and 7, which is pay to officers and
     directors, to disqualified persons, and all other salaries and wages. Benefits, pensions
     and payroll taxes are shown separately as "salaries, other pay and benefits" (Part I line 15).
@@ -40,14 +40,14 @@
     salary base, so the "top 10 share" can overstate slightly when it is large.</li>
   <li><strong>Employees</strong>: the number of W-2s the organization filed for the calendar year,
     which counts part time and seasonal staff the same as full time.</li>
-  <li><strong>Board members</strong>: people marked as an individual or institutional trustee or
-    director. On Form 990-EZ and 990-PF there is no such mark, so this site reads the title.</li>
+  <li><strong>Leadership</strong>: current officers, key employees, and directors and trustees
+    (people marked as an individual or institutional trustee or director) listed in Form 990
+    Part VII. On Form 990-EZ and 990-PF there are no such marks, so this site reads the title.
+    Former officers are left out. "None reported" means the return shows no pay for them.</li>
+  <li><strong>Other people listed</strong>: returns also list highly paid employees and former
+    officers. They appear only if they are among the top 10 paid. The full list is in the
+    return, linked under Sources on each organization page.</li>
 </ul>
-
-<h2>Matching people across organizations</h2>
-<p>Returns list people by name only. This site joins names after removing titles,
-  suffixes, middle names and initials, so "Dr. Jane Q. Example, PhD" and "JANE EXAMPLE" are
-  the same page. Different people with the same name are joined too. Every person page says so.</p>
 
 <h2>Limits</h2>
 <ul>

@@ -5,13 +5,14 @@
 -- Purpose : Build the "site" schema the pages are rendered from:
 --           - org:    each organization's most recent return, its size rank,
 --                     salary base and how much of it the top 10 listed get
---           - role:   everyone listed on those returns
---           - person: people (by normalized name) at organizations with pages
+--           - role:   everyone listed on those returns (pages show only
+--                     leadership and the top 10 paid)
 -- Usage   : psql -v rank_by=revenue -v min_usd=10000000 -v page_by=assets
 --                -v top_pct=10 -v top_n=100 -f sql/20_site.sql
 -- Change log:
 --   2026-10-26  0.1.0  Initial version.
 --   2026-10-26  0.1.0  Pages only for the top top_pct percent by page_by.
+--   2026-10-28  0.1.0  No person table: the site has no person pages.
 -- =============================================================================
 \set ON_ERROR_STOP on
 DROP SCHEMA IF EXISTS site CASCADE;
@@ -74,7 +75,6 @@ SELECT o.ein, p.seq, p.name, p.key, p.title, p.hours, p.board, p.officer,
          p.seq) AS pay_rank
 FROM site.org o JOIN raw.person p ON p.object_id = o.object_id;
 CREATE INDEX ON site.role (ein);
-CREATE INDEX ON site.role (key);
 
 UPDATE site.org o SET listed_count = s.n, board_count = s.nb,
        top10_comp = s.top10, listed_comp = s.total
@@ -84,19 +84,5 @@ FROM (SELECT ein, count(*) AS n, count(*) FILTER (WHERE board) AS nb,
       FROM site.role GROUP BY ein) s
 WHERE s.ein = o.ein;
 
--- People with a page: anyone listed by an organization that has a page.
-CREATE TABLE site.person AS
-SELECT key,
-       (array_agg(r.name ORDER BY o.measure DESC NULLS LAST))[1] AS name,
-       count(DISTINCT r.ein) AS org_count,
-       sum(r.total_comp) AS total_comp
-FROM site.role r JOIN site.org o USING (ein)
-WHERE r.key IS NOT NULL
-  AND r.key IN (SELECT r2.key FROM site.role r2 JOIN site.org o2 USING (ein)
-                WHERE o2.has_page AND r2.key IS NOT NULL)
-GROUP BY key;
-ALTER TABLE site.person ADD PRIMARY KEY (key);
-
 ANALYZE site.org;
 ANALYZE site.role;
-ANALYZE site.person;

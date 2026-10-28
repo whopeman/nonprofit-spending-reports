@@ -31,3 +31,13 @@ All notable changes are listed here. The format follows
 - `page_by` and `page_top_pct` flags: pages only for the top 10% by total assets of
   organizations over the revenue threshold, to keep the file count down.
 - Security headers via `.htaccess` and a Content-Security-Policy meta tag.
+
+### Changed
+
+- Organization pages list only the leadership (current officers, key employees,
+  directors and trustees, with pay where reported) and the top 10 paid. The board
+  and "everyone else" lists are gone.
+
+### Removed
+
+- Person pages, the people search index and the `site.person` table.

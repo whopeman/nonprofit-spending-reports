@@ -3,20 +3,21 @@ src/nppipe/render.py
 Project : Non-Profit Spending Reports
 Date    : 2026-10-26
 Purpose : Write the static site: home page (search box and top list),
-          one page per organization and per listed person, A-Z browse
-          pages, the search index, CSS, script and .htaccess.
+          one page per organization (its leadership and top 10 paid),
+          A-Z browse pages, the search index, CSS, script and .htaccess.
           All links are relative so the site works under any folder
           (it is served from https://hopemanhorde.com/nonprofit-spending/).
 Usage   : site = Site(out_dir=Path("site"), generated="2026-10-26", top_n=100)
           site.build(orgs, roles)                     # everything in memory
-          or: common_pages(); home(); org_page(); person_page(); finish()
+          or: common_pages(); home(); org_page(); finish()
 Change log:
   2026-10-26  0.1.0  Initial version.
+  2026-10-28  0.1.0  Org pages list only leadership and the top 10 paid; no
+                     person pages or people search.
 """
 
 from __future__ import annotations
 
-import hashlib
 import json
 import shutil
 from collections import defaultdict
@@ -48,15 +49,20 @@ def org_slug(org: Org) -> str:
     return slugify(org.name, org.ein)
 
 
-def person_slug(key: str) -> str:
-    """Readable and unique: the key's slug plus a short hash of the exact key."""
-    digest = hashlib.sha1(key.encode(), usedforsecurity=False).hexdigest()[:6]
-    return slugify(key, digest)
+def leadership(roles: list[Role]) -> list[Role]:
+    """Current officers, key employees, then directors and trustees; best paid
+    first within each group. Former officers are left out (they can still be
+    in the top 10 paid)."""
+    leaders = [r for r in roles if not r.former and (r.officer or r.key_employee or r.board)]
+    return sorted(
+        leaders,
+        key=lambda r: (0 if r.officer else 1 if r.key_employee else 2, -r.total_comp, r.pay_rank),
+    )
 
 
-def person_path(key: str) -> str:
-    slug = person_slug(key)
-    return f"person/{slug[:2]}/{slug}.html"
+def top_paid(roles: list[Role], n: int = 10) -> list[Role]:
+    top = sorted(roles, key=lambda r: (-r.total_comp, r.pay_rank))[:n]
+    return [r for r in top if r.total_comp > 0]
 
 
 def hours(h) -> str:
@@ -130,14 +136,12 @@ class Site:
             generated=generated,
             repo_url=REPO_URL,
             org_slug=org_slug,
-            person_path=person_path,
             phase2=self.phase2,
             phase3=self.phase3,
             top_n=top_n,
             rank_label=RANK_LABELS.get(rank_by, rank_by),
         )
         self._orgs_index: list[list] = []
-        self._people_index: dict[str, list[list]] = defaultdict(list)
         self._browse: dict[str, list[Org]] = defaultdict(list)
 
     # -- helpers ----------------------------------------------------------------
@@ -162,24 +166,13 @@ class Site:
     def home(self, top: list[Org], org_count: int) -> None:
         self._write("index.html", "home.html.j2", top=top[: self.top_n], org_count=org_count)
 
-    def org_page(self, org: Org, roles: list[Role], person_pages: set[str] | None = None):
-        """person_pages: keys that have a page (None means every key does)."""
-
-        def linked(r: Role) -> bool:
-            return r.key is not None and (person_pages is None or r.key in person_pages)
-
-        top10 = sorted(roles, key=lambda r: (-r.total_comp, r.pay_rank))[:10]
-        top10 = [r for r in top10 if r.total_comp > 0]
-        board = [r for r in roles if r.board]
-        others = [r for r in roles if not r.board and r not in top10]
+    def org_page(self, org: Org, roles: list[Role]) -> None:
         self._write(
             f"org/{org_slug(org)}.html",
             "org.html.j2",
             org=org,
-            top10=top10,
-            board=board,
-            others=others,
-            linked=linked,
+            leaders=leadership(roles),
+            top10=top_paid(roles),
         )
         self._orgs_index.append(
             [
@@ -192,15 +185,6 @@ class Site:
         )
         self._browse[browse_letter(nice_org_name(org.name))].append(org)
 
-    def person_page(self, key: str, roles: list[Role]) -> None:
-        roles = sorted(roles, key=lambda r: (not r.org.has_page, r.org.rank))
-        name = display_name(roles[0].name)
-        self._write(person_path(key), "person.html.j2", key=key, name=name, roles=roles)
-        orgs = len({r.org.ein for r in roles})
-        entry = [name, orgs, person_path(key)]
-        for letter in {w[0].lower() for w in key.split() if w[:1].isalpha()}:
-            self._people_index[letter].append(entry)
-
     def finish(self) -> None:
         search = self.out / "search"
         search.mkdir(parents=True, exist_ok=True)
@@ -208,10 +192,6 @@ class Site:
             json.dumps(sorted(self._orgs_index, key=lambda o: o[3]), separators=(",", ":")),
             encoding="utf-8",
         )
-        for letter, entries in self._people_index.items():
-            (search / f"people-{letter}.json").write_text(
-                json.dumps(sorted(entries), separators=(",", ":")), encoding="utf-8"
-            )
         for letter in LETTERS:
             orgs = sorted(self._browse.get(letter, []), key=lambda o: nice_org_name(o.name).upper())
             self._write(
@@ -226,14 +206,8 @@ class Site:
         paged = [o for o in orgs if o.has_page]
         self.home(paged, len(paged))
         by_org: dict[str, list[Role]] = defaultdict(list)
-        by_key: dict[str, list[Role]] = defaultdict(list)
         for r in roles:
             by_org[r.org.ein].append(r)
-            if r.key:
-                by_key[r.key].append(r)
-        keys = {k for k, rs in by_key.items() if any(r.org.has_page for r in rs)}
         for o in paged:
-            self.org_page(o, by_org[o.ein], keys)
-        for k in sorted(keys):
-            self.person_page(k, by_key[k])
+            self.org_page(o, by_org[o.ein])
         self.finish()

@@ -5,21 +5,21 @@
   Purpose : Home page: search box and the top organizations by money flow.
   Change log:
     2026-10-26  0.1.0  Initial version.
+    2026-10-28  0.1.0  Leadership wording; search by organization only.
 #}
 {% extends "base.html.j2" %}
 {% block content %}
 <h1>Who runs America's largest non-profits, and who gets paid</h1>
 <p class="lead">
-  Boards, top salaries and the overall salary base of {{ "{:,}".format(org_count) }}
+  Leadership, top salaries and the overall salary base of {{ "{:,}".format(org_count) }}
   large tax-exempt organizations, from the returns they file with the IRS each year.
-  Every person listed links to every other non-profit that lists them.
 </p>
 
 <section class="search" aria-labelledby="search-h">
   <h2 id="search-h">Search</h2>
-  <label for="q">Organization or person name</label>
+  <label for="q">Organization name</label>
   <input id="q" type="search" autocomplete="off" spellcheck="false"
-         placeholder="e.g. Carnegie, or a person's name" data-root="{{ root }}">
+         placeholder="e.g. Carnegie" data-root="{{ root }}">
   <p id="search-status" class="muted" aria-live="polite">
     Search needs JavaScript. Without it, use the <a href="browse/a.html">A to Z list</a>.
   </p>

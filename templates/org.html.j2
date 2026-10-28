@@ -2,15 +2,16 @@
   templates/org.html.j2
   Project : Non-Profit Spending Reports
   Date    : 2026-10-26
-  Purpose : One organization: money totals, salary base, top 10 paid,
-            board members and everyone else listed on its latest return.
+  Purpose : One organization: money totals, salary base, its leadership
+            (officers, key employees, directors and trustees) and the top 10
+            paid people listed on its latest return.
   Change log:
     2026-10-26  0.1.0  Initial version.
+    2026-10-28  0.1.0  Only leadership and top 10 paid; no person links.
 #}
 {% extends "base.html.j2" %}
-{% macro person_cell(r) %}{% if linked(r) %}<a href="{{ root }}{{ person_path(r.key) }}">{{ r.name | person }}</a>{% else %}{{ r.name | person }}{% endif %}{% endmacro %}
 {% block title %}{{ org.name | orgname | short_title }}{% endblock %}
-{% block description %}Board, top salaries and salary base of {{ org.name | orgname }}, from its IRS {{ org.form_name }}.{% endblock %}
+{% block description %}Leadership, top salaries and salary base of {{ org.name | orgname }}, from its IRS {{ org.form_name }}.{% endblock %}
 {% block content %}
 <h1>{{ org.name | orgname }}</h1>
 <p class="lead">
@@ -38,6 +39,27 @@
     see <a href="{{ root }}about.html">About the data</a>.</p>
 </section>
 
+<section aria-labelledby="lead-h">
+  <h2 id="lead-h">Leadership ({{ leaders | length }})</h2>
+  {% if leaders %}
+  <div class="scroll">
+  <table class="data">
+    <thead><tr><th scope="col">Name</th><th scope="col">Title</th><th scope="col">Role</th>
+      <th scope="col" class="num">Hours/week</th><th scope="col" class="num">Total pay</th></tr></thead>
+    <tbody>
+    {% for r in leaders %}
+    <tr><td>{{ r.name | person }}</td><td>{{ r.title or "" }}</td><td>{{ r.kinds }}</td>
+      <td class="num">{{ r.hours | hrs }}</td>
+      <td class="num">{{ (r.total_comp | usd) if r.total_comp else "None reported" }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p>No officers, key employees, directors or trustees are marked on this return.</p>
+  {% endif %}
+</section>
+
 <section aria-labelledby="top-h">
   <h2 id="top-h">Top 10 paid people listed</h2>
   {% if top10 %}
@@ -53,7 +75,7 @@
       <th scope="col" class="num">Total</th></tr></thead>
     <tbody>
     {% for r in top10 %}
-    <tr><td>{{ person_cell(r) }}</td><td>{{ r.title or "" }}</td><td>{{ r.kinds }}</td>
+    <tr><td>{{ r.name | person }}</td><td>{{ r.title or "" }}</td><td>{{ r.kinds }}</td>
       <td class="num">{{ r.hours | hrs }}</td>
       <td class="num">{{ r.comp_org | usd }}</td><td class="num">{{ r.comp_related | usd }}</td>
       <td class="num">{{ r.comp_other | usd }}</td><td class="num">{{ r.total_comp | usd }}</td></tr>
@@ -65,37 +87,6 @@
   <p>No one listed on this return was paid.</p>
   {% endif %}
 </section>
-
-<section aria-labelledby="board-h">
-  <h2 id="board-h">Board members ({{ board | length }})</h2>
-  {% if board %}
-  <div class="scroll">
-  <table class="data">
-    <thead><tr><th scope="col">Name</th><th scope="col">Title</th>
-      <th scope="col" class="num">Hours/week</th><th scope="col" class="num">Total pay</th></tr></thead>
-    <tbody>
-    {% for r in board %}
-    <tr><td>{{ person_cell(r) }}</td><td>{{ r.title or "" }}</td>
-      <td class="num">{{ r.hours | hrs }}</td>
-      <td class="num">{{ r.total_comp | usd }}</td></tr>
-    {% endfor %}
-    </tbody>
-  </table>
-  </div>
-  {% else %}
-  <p>No board members are marked on this return.</p>
-  {% endif %}
-</section>
-
-{% if others %}
-<section aria-labelledby="other-h">
-  <h2 id="other-h">Other officers and employees listed ({{ others | length }})</h2>
-  <ul class="cols">
-  {% for r in others %}<li>{{ person_cell(r) }}{% if r.title %}, {{ r.title }}{% endif %}{% if r.total_comp %} ({{ r.total_comp | usd }}){% endif %}</li>
-  {% endfor %}
-  </ul>
-</section>
-{% endif %}
 
 <section aria-labelledby="src-h">
   <h2 id="src-h">Sources</h2>

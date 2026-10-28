@@ -11,6 +11,7 @@
 #           UV_PROJECT_ENVIRONMENT pointing at the project venv.
 # Change log:
 #   2026-10-26  0.1.0  Initial version.
+#   2026-10-28  0.1.0  No person table to count.
 # =============================================================================
 set -euo pipefail
 
@@ -61,8 +62,7 @@ site() {
   log "build site schema (rank by $rank_by; pages: top $top_pct% by $page_by of orgs from \$$min_usd)"
   psql_db -v rank_by="$rank_by" -v min_usd="$min_usd" -v page_by="$page_by" \
     -v top_pct="$top_pct" -v top_n="$top_n" -f "$HERE/sql/20_site.sql"
-  psql_db -Atc "SELECT 'orgs with pages', count(*) FROM site.org WHERE has_page
-                UNION ALL SELECT 'people with pages', count(*) FROM site.person"
+  psql_db -Atc "SELECT 'orgs with pages', count(*) FROM site.org WHERE has_page"
 }
 
 case "$step" in

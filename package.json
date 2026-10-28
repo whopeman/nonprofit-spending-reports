@@ -11,7 +11,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
-    "lint:html": "html-validate \"site/*.html\" \"site/org/*.html\" \"site/browse/*.html\" \"site/person/**/*.html\""
+    "lint:html": "html-validate \"site/*.html\" \"site/org/*.html\" \"site/browse/*.html\""
   },
   "devDependencies": {
     "html-validate": "^11.17.0"

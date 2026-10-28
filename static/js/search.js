@@ -2,12 +2,11 @@
   static/js/search.js
   Project : Non-Profit Spending Reports
   Date    : 2026-10-26
-  Purpose : Client-side search over the static index files in search/:
-            orgs.json (every organization with a page) and people-<letter>.json
-            (people, filed under the first letter of their first and last name).
-            Results are built with DOM methods only (no innerHTML).
+  Purpose : Client-side search over search/orgs.json (every organization
+            with a page). Results are built with DOM methods only (no innerHTML).
   Change log:
     2026-10-26  0.1.0  Initial version.
+    2026-10-28  0.1.0  Organizations only; no people search.
 */
 (function () {
   "use strict";
@@ -61,24 +60,16 @@
     var words = q.split(/\s+/).filter(Boolean);
     list.replaceChildren();
     if (q.length < 2) { status.textContent = "Type at least 2 letters."; return; }
-    var first = words[0].charAt(0);
-    var people = /[a-z]/.test(first) ? load("people-" + first) : Promise.resolve([]);
-    Promise.all([load("orgs"), people]).then(function (res) {
+    load("orgs").then(function (all) {
       if (norm(input.value.trim()) !== q) return; // a newer search is running
-      var orgs = res[0].filter(function (o) { return matches(o[0], words); });
-      var ppl = res[1].filter(function (p) { return matches(p[0], words); });
-      ppl.sort(function (a, b) { return b[1] - a[1]; });
+      var orgs = all.filter(function (o) { return matches(o[0], words); });
       var shown = 0;
       orgs.slice(0, MAX).forEach(function (o) {
         var place = [o[1], o[2]].filter(Boolean).join(", ");
         list.appendChild(item(o[4], o[0], "Organization" + (place ? ", " + place : "") + ", rank " + o[3]));
         shown++;
       });
-      ppl.slice(0, MAX).forEach(function (p) {
-        list.appendChild(item(p[2], p[0], "Person, listed by " + p[1] + (p[1] === 1 ? " organization" : " organizations")));
-        shown++;
-      });
-      var total = orgs.length + ppl.length;
+      var total = orgs.length;
       status.textContent = total === 0 ? "No matches."
         : total > shown ? "Showing " + shown + " of " + total + " matches. Add words to narrow it."
         : total + (total === 1 ? " match." : " matches.");
