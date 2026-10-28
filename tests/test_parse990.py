@@ -6,6 +6,7 @@ Purpose : The IRS e-file XML parser pulls the filer, the money totals and
           the people listed on Forms 990, 990-EZ and 990-PF.
 Change log:
   2026-10-26  0.1.0  Initial tests.
+  2026-10-28  0.1.0  Damaged members and out-of-range amounts (torch).
 """
 
 import io
@@ -16,7 +17,7 @@ from pathlib import Path
 
 import pytest
 
-from nppipe.parse990 import iter_zip, parse_return
+from nppipe.parse990 import _int, iter_zip, parse_return
 
 FIX = Path(__file__).parent / "fixtures"
 
@@ -127,6 +128,31 @@ def test_iter_zip_reads_every_member(tmp_path):
         filings.append(f)
     assert [f.object_id for f in filings] == ["202500000000000001"]
     assert errors == ["202500000000000003"]
+
+
+def test_damaged_member_is_one_error_not_a_failed_batch(tmp_path):
+    xml = (FIX / "f990.xml").read_bytes()
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        z.writestr("batch/202500000000000001_public.xml", xml)
+        z.writestr("batch/202500000000000002_public.xml", xml)
+    raw = bytearray(buf.getvalue())
+    second = raw.find(b"PK", 4)
+    raw[second - 20] ^= 0xFF  # corrupt the first member's compressed data
+    path = tmp_path / "b.zip"
+    path.write_bytes(bytes(raw))
+    errors = []
+    filings = list(iter_zip(path, on_error=lambda oid, e: errors.append(oid)))
+    assert [f.object_id for f in filings] == ["202500000000000002"]
+    assert errors == ["202500000000000001"]
+
+
+def test_out_of_range_amount_is_missing():
+    from xml.etree.ElementTree import fromstring
+
+    el = fromstring('<a xmlns="http://www.irs.gov/efile"><X>1e400</X><Y>12.6</Y></a>')
+    assert _int(el, "X") is None
+    assert _int(el, "Y") == 13
 
 
 def _deflate64_zip(tmp_path, member: str, payload: bytes, file_size: int | None = None):

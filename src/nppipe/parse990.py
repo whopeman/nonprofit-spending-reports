@@ -12,6 +12,8 @@ Usage   : parse_return(xml_bytes, object_id) -> Filing | None
 Change log:
   2026-10-26  0.1.0  Initial version.
   2026-10-26  0.1.0  Read Deflate64 batches (some 2025-2026 zips) via inflate64.
+  2026-10-28  0.1.0  A damaged member (bad CRC, broken stream) is one bad return,
+                     not a failed batch; out-of-range amounts read as missing (torch).
 """
 
 from __future__ import annotations
@@ -34,6 +36,8 @@ from nppipe.names import is_placeholder, person_key
 NS = "{http://www.irs.gov/efile}"
 FORMS = ("990", "990EZ", "990PF")
 DEFLATE64 = 9  # zip compression method id
+# What reading one damaged member of an otherwise good zip can raise.
+MEMBER_ERRORS = (zipfile.BadZipFile, zlib.error, EOFError, NotImplementedError)
 MAX_MEMBER_BYTES = 64 * 1024 * 1024  # the largest real returns are a few MB
 _BOARD = re.compile(r"DIRECTOR|TRUSTEE|BOARD|CHAIR|GOVERNOR|MEMBER|REGENT")
 _NOT_BOARD = re.compile(r"(EXECUTIVE|MANAGING|ASSOCIATE|ASSISTANT|PROGRAM|FINANCE|MEDICAL)\s+DIR")
@@ -105,7 +109,7 @@ def _int(el: Element | None, p: str) -> int | None:
         return None
     try:
         return round(float(t))
-    except ValueError:
+    except (ValueError, OverflowError):  # OverflowError: "1e400" is inf
         return None
 
 
@@ -331,7 +335,7 @@ def iter_zip(
                 continue
             try:
                 f = parse_return(read_member(z, info), oid)
-            except ValueError as e:
+            except (ValueError, *MEMBER_ERRORS) as e:
                 if on_error:
                     on_error(oid, e)
                 continue
