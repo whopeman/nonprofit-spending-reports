@@ -14,12 +14,16 @@ Change log:
   2026-10-26  0.1.0  Initial version.
   2026-10-28  0.1.0  Org pages list only leadership and the top 10 paid; no
                      person pages or people search.
+  2026-10-28  0.1.0  A-Z: skip leading punctuation ('IOLANI SCHOOL is on I) and
+                     file accented letters under the plain letter (they were
+                     on no page) (torch).
 """
 
 from __future__ import annotations
 
 import json
 import shutil
+import unicodedata
 from collections import defaultdict
 from collections.abc import Iterable
 from pathlib import Path
@@ -87,8 +91,11 @@ def sentence(text: str | None) -> str:
 
 
 def browse_letter(name: str) -> str:
-    c = (name or "#")[:1].upper()
-    return c.lower() if c.isalpha() else "0"
+    """The A-Z page a name is listed on: "École" on e, "'Iolani" on i, and
+    digits and anything else on 0."""
+    first = (name or "").lstrip(" '\"`.,-(ʻ‘’“")[:1]
+    c = unicodedata.normalize("NFKD", first)[:1].lower()
+    return c if c in LETTERS else "0"
 
 
 def nice_org_name(name: str) -> str:
