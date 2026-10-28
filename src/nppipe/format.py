@@ -6,6 +6,8 @@ Purpose : Display helpers: whole-dollar and compact money, percentages, and
           URL-safe slugs for page file names.
 Change log:
   2026-10-26  0.1.0  Initial version (from Campaign Donations).
+  2026-10-28  0.1.0  compact_usd: round before choosing the unit, so $999,999,999
+                     shows as $1B, not $1e+03M (torch).
 """
 
 from __future__ import annotations
@@ -30,11 +32,11 @@ def compact_usd(amount) -> str:
     """$2.45B, $12.3M, $950K: for tables where whole dollars are too wide."""
     if amount is None:
         return MISSING
-    a = float(amount)
-    for div, unit in ((1e9, "B"), (1e6, "M"), (1e3, "K")):
+    a = float(f"{float(amount):.3g}")  # 3 significant figures, rounded once
+    for div, unit in ((1e12, "T"), (1e9, "B"), (1e6, "M"), (1e3, "K")):
         if abs(a) >= div:
-            return f"${a / div:.3g}{unit}"
-    return usd(a)
+            return f"{'-' if a < 0 else ''}${abs(a) / div:g}{unit}"
+    return usd(amount)
 
 
 def pct(part, whole) -> str:
