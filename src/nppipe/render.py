@@ -17,6 +17,7 @@ Change log:
   2026-10-28  0.1.0  A-Z: skip leading punctuation ('IOLANI SCHOOL is on I) and
                      file accented letters under the plain letter (they were
                      on no page) (torch).
+  2026-10-28  0.1.0  Org pages named by EIN alone (org/250965280.html).
 """
 
 from __future__ import annotations
@@ -50,7 +51,10 @@ CSP = (
 
 
 def org_slug(org: Org) -> str:
-    return slugify(org.name, org.ein)
+    """Page name: the 9-digit EIN alone. GoDaddy counts a file name longer than
+    16 characters as two or more inodes (of 250,000 per account)."""
+    ein = "".join(ch for ch in org.ein if ch.isdigit())
+    return ein or slugify(org.name, None)[:11]
 
 
 def leadership(roles: list[Role]) -> list[Role]:

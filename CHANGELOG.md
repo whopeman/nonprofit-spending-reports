@@ -37,6 +37,8 @@ All notable changes are listed here. The format follows
 - Organization pages list only the leadership (current officers, key employees,
   directors and trustees, with pay where reported) and the top 10 paid. The board
   and "everyone else" lists are gone.
+- Organization pages are named by EIN alone (`org/250965280.html`), so every file
+  name fits in one GoDaddy inode (names over 16 characters count as two or more).
 
 ### Removed
 

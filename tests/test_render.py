@@ -7,6 +7,7 @@ Purpose : The demo site renders, every internal link resolves, names are
 Change log:
   2026-10-26  0.1.0  Initial tests.
   2026-10-28  0.1.0  Leadership and top 10 only; no person pages.
+  2026-10-28  0.1.0  Org pages named by EIN alone (GoDaddy inode count).
 """
 
 import json
@@ -76,7 +77,7 @@ def _section(page: str, heading_id: str) -> str:
 
 
 def test_org_page_shows_leadership_top10_and_share(site):
-    page = next((site / "org").glob("example-museums*.html")).read_text(encoding="utf-8")
+    page = next((site / "org").glob("990000001.html")).read_text(encoding="utf-8")
     assert "Leadership" in page
     assert "Top 10 paid" in page
     assert "Board members" not in page
@@ -87,7 +88,7 @@ def test_org_page_shows_leadership_top10_and_share(site):
 
 
 def test_leadership_lists_officers_and_board_with_pay(site):
-    page = next((site / "org").glob("example-museums*.html")).read_text(encoding="utf-8")
+    page = next((site / "org").glob("990000001.html")).read_text(encoding="utf-8")
     lead = _section(page, "lead-h")
     assert lead.index("Jane Q Example") < lead.index("Sam Sample")  # officers first, best paid
     assert "$1,010,000" in lead  # Jane's total pay
@@ -121,11 +122,11 @@ def test_search_index(site):
 def test_phase_flags_hide_unbuilt_sections(tmp_path):
     s = Site(out_dir=tmp_path, generated="2026-10-26", top_n=2)
     s.build(*demo_data())
-    page = next((tmp_path / "org").glob("example-museums*.html")).read_text(encoding="utf-8")
+    page = next((tmp_path / "org").glob("990000001.html")).read_text(encoding="utf-8")
     assert "Program spending" not in page
     s2 = Site(out_dir=tmp_path / "p2", generated="2026-10-26", top_n=2, phase2_spending=True)
     s2.build(*demo_data())
-    page2 = next((tmp_path / "p2" / "org").glob("example-museums*.html")).read_text("utf-8")
+    page2 = next((tmp_path / "p2" / "org").glob("990000001.html")).read_text("utf-8")
     assert "Program spending" in page2
 
 
@@ -141,3 +142,12 @@ def test_page_titles_fit_70_characters(tmp_path):
         title = html[html.index("<title>") + 7 : html.index("</title>")]
         # html-validate counts the source text, so entities such as &amp; count in full.
         assert len(title) <= 70, page.name
+
+
+def test_org_page_file_names_fit_one_godaddy_inode():
+    # GoDaddy counts a file name over 16 characters as two or more inodes.
+    from nppipe.render import org_slug
+
+    org = next(o for o in demo_data()[0] if o.ein == "990000001")
+    assert org_slug(org) == "990000001"
+    assert len(f"{org_slug(org)}.html") <= 16
